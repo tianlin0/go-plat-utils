@@ -59,7 +59,10 @@ func TestToBool(t *testing.T) {
 			}
 			continue
 		}
-		t.Errorf("toBool(%v): (%v) conv error", got, test.input)
+		if got != test.want {
+			t.Errorf("toBool(%v): (%v) conv error", got, test.input)
+		}
+
 	}
 }
 
@@ -113,12 +116,16 @@ func TestAnyToBool(t *testing.T) {
 	}
 
 	for _, test := range testCases {
-		if got, ok := Bool(test.input); ok {
+		got, ok := Bool(test.input)
+		if ok {
 			if got != test.want {
 				t.Errorf("[%s]toBool(%v) = %v; want %v", test.name, test.input, got, test.want)
 			}
 			continue
 		}
-		t.Errorf("[%s]toBool(%v): conv error", test.name, test.input)
+		if got != test.want {
+			t.Errorf("[%s]toBool(%v): conv error", test.name, test.input)
+		}
+
 	}
 }
