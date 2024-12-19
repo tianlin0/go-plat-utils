@@ -2,13 +2,14 @@ package conv
 
 import (
 	"reflect"
+	"strconv"
 	"strings"
 )
 
 // Bool 将给定的值转换为bool
 func Bool(i any) (bool, bool) {
 	if i == nil {
-		return false, false
+		return false, true
 	}
 	if b, ok := i.(bool); ok {
 		return b, true
@@ -23,7 +24,7 @@ func Bool(i any) (bool, bool) {
 	v := reflect.ValueOf(i)
 	if v.Kind() == reflect.Ptr {
 		if v.IsNil() {
-			return false, false
+			return false, true
 		}
 		v = v.Elem()
 	}
@@ -41,19 +42,21 @@ func Bool(i any) (bool, bool) {
 		return v.Complex() != 0, true
 	case reflect.String:
 		val := strings.ToLower(v.String())
-		if val == "true" {
+		if val == "true" || val == "yes" {
 			return true, true
-		} else if val == "false" {
+		} else if val == "false" || val == "no" {
 			return false, true
 		}
-		return v.String() != "", false
+		boolValue, err := strconv.ParseBool(val)
+		if err != nil {
+			if val == "" {
+				return false, true
+			}
+			//别的字符都会报false，表示转换失败，需要传正确的字符串
+			return true, false
+		}
+		return boolValue, true
 	default:
-		val := strings.ToLower(String(i))
-		if val == "true" {
-			return true, true
-		} else if val == "false" {
-			return false, true
-		}
-		return false, false
+		return Bool(String(i))
 	}
 }
