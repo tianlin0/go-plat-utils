@@ -34,15 +34,15 @@ func getCurrentGoId() string {
 	return strconv.FormatInt(routine.Goid(), baseInt)
 }
 
-// SetContext 设置上下文，会返回当前的IdKey
-func SetContext(ctxKey string, ctx *context.Context) string {
-	ctxFactory := getCache()
+// SetContext 设置上下文，需要在入口协程上执行，会返回当前的IdKey
+func SetContext(ctx *context.Context) {
+	_, ctxKey := GetContext()
 	if ctxKey == "" {
 		ctxKey = getCurrentGoId()
 	}
+	ctxFactory := getCache()
 	ctxFactory.Set(ctxKey, ctx, gocache.DefaultExpiration)
 	localStorage.Set(ctxKey)
-	return ctxKey
 }
 
 // GetContext 获取上下文
@@ -66,13 +66,11 @@ func GetContext() (ctx *context.Context, ctxKey string) {
 }
 
 // DelContext 删除上下文
-func DelContext(ctxKey string) {
+func DelContext() {
 	ctxFactory := getCache()
+	ctxKey := localStorage.Get()
 	if ctxKey == "" {
-		ctxKey = localStorage.Get()
-		if ctxKey == "" {
-			return
-		}
+		return
 	}
 	ctxFactory.Delete(ctxKey)
 }
