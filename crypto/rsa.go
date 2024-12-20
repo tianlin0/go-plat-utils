@@ -1,4 +1,4 @@
-package conv
+package crypto
 
 import (
 	"crypto/rand"
