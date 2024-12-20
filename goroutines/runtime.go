@@ -68,8 +68,7 @@ func GoSync(task func(params ...any), panicHandle func(err error), params ...any
 }
 
 // GoAsync 异步方法
-// 异步有一个总量，不然会创建太多，造成系统阻塞了
-func GoAsync(task func(params ...interface{}), panicHandle func(err error), params ...interface{}) {
+func GoAsync(task func(params ...any), panicHandle func(err error), params ...any) {
 	fun := func() {
 		func(tempParams ...interface{}) {
 			GoSync(task, panicHandle, tempParams...)

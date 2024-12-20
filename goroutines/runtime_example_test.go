@@ -4,11 +4,10 @@ import (
 	"context"
 	"fmt"
 	"github.com/tianlin0/go-plat-utils/goroutines"
-	"testing"
 	"time"
 )
 
-func TestGoAsync(t *testing.T) {
+func ExampleGoAsync() {
 	ctx := context.Background()
 	ctx = context.WithValue(ctx, "fish", "章鱼")
 
@@ -49,4 +48,6 @@ func TestGoAsync(t *testing.T) {
 	}, nil)
 
 	time.Sleep(1 * time.Second)
+
+	// Output:
 }
