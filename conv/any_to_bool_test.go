@@ -1,131 +1,54 @@
-package conv
+package conv_test
 
 import (
+	"github.com/tianlin0/go-plat-utils/conv"
+	"github.com/tianlin0/go-plat-utils/tools"
 	"testing"
 )
 
-func TestToBool(t *testing.T) {
-	iPtr := 90
-	var tests = []struct {
-		input any
-		want  bool
-	}{
-		{true, true},
-		{false, false},
-		{int(-1), true},
-		{int(1), true},
-		{int(0), false},
-		{int8(1), true},
-		{int8(0), false},
-		{int16(1), true},
-		{int16(0), false},
-		{int32(1), true},
-		{int32(0), false},
-		{int64(1), true},
-		{int64(100), true},
-		{int64(0), false},
-		{uint(1), true},
-		{uint(0), false},
-		{uint8(1), true},
-		{uint8(0), false},
-		{uint16(1), true},
-		{uint16(0), false},
-		{uint32(1), true},
-		{uint32(0), false},
-		{uint64(1), true},
-		{uint64(0), false},
-		{float32(1.0), true},
-		{float32(0.0), false},
-		{float64(1.0), true},
-		{float64(0.0), false},
-		{"abc", true},
-		{"true", true},
-		{"false", false},
-		{"", false},
-		{nil, false},
-		{complex64(1 + 1i), true},
-		{complex64(0 + 0i), false},
-		{complex128(1 + 1i), true},
-		{complex128(0 + 0i), false},
-		{(*int)(nil), false},
-		{&iPtr, true},
-		{[]int{}, false},
-	}
-	for _, test := range tests {
-		got, ok := Bool(test.input)
-		if ok {
-			if got != test.want {
-				t.Errorf("toBool(%v) = %v; want %v", test.input, got, test.want)
-			}
-			continue
-		}
-		if got != test.want {
-			t.Errorf("toBool(%v): (%v) conv error", got, test.input)
-		}
-
-	}
-}
-
 func TestAnyToBool(t *testing.T) {
 	iPtr := 90
-	testCases := []struct {
-		name  string
-		input any
-		want  bool
-	}{
-		{"bool true", true, true},
-		{"bool false", false, false},
-		{"int -1", int(-1), true},
-		{"int 1", int(1), true},
-		{"int 0", int(0), false},
-		{"int8 1", int8(1), true},
-		{"int8 0", int8(0), false},
-		{"int16 1", int16(1), true},
-		{"int16 0", int16(0), false},
-		{"int32 1", int32(1), true},
-		{"int32 0", int32(0), false},
-		{"int64 1", int64(1), true},
-		{"int64 100", int64(100), true},
-		{"int64 0", int64(0), false},
-		{"uint 1", uint(1), true},
-		{"uint 0", uint(0), false},
-		{"uint8 1", uint8(1), true},
-		{"uint8 0", uint8(0), false},
-		{"uint16 1", uint16(1), true},
-		{"uint16 0", uint16(0), false},
-		{"uint32 1", uint32(1), true},
-		{"uint32 0", uint32(0), false},
-		{"uint64 1", uint64(1), true},
-		{"uint64 0", uint64(0), false},
-		{"float32 1.0", float32(1.0), true},
-		{"float32 0.0", float32(0.0), false},
-		{"float64 1.0", float64(1.0), true},
-		{"float64 0.0", float64(0.0), false},
-		{"string abc", "abc", true},
-		{"string true", "true", true},
-		{"string false", "false", false},
-		{"empty string", "", false},
-		{"nil value", nil, false},
-		{"complex64 1+1i", complex64(1 + 1i), true},
-		{"complex64 0+0i", complex64(0 + 0i), false},
-		{"complex128 1+1i", complex128(1 + 1i), true},
-		{"complex128 0+0i", complex128(0 + 0i), false},
-		{"nil pointer", (*int)(nil), false},
-		{"non-nil pointer", &iPtr, true},
-		{"empty slice", []int{}, false},
+	testCases := []*tools.TestStruct{
+		{"bool true", []any{true}, []any{true, true}},
+		{"bool false", []any{false}, []any{false}},
+		{"int -1", []any{int(-1)}, []any{true}},
+		{"int 1", []any{int(1)}, []any{true}},
+		{"int 0", []any{int(0)}, []any{false}},
+		{"int8 1", []any{int8(1)}, []any{true}},
+		{"int8 0", []any{int8(0)}, []any{false}},
+		{"int16 1", []any{int16(1)}, []any{true}},
+		{"int16 0", []any{int16(0)}, []any{false}},
+		{"int32 1", []any{int32(1)}, []any{true}},
+		{"int32 0", []any{int32(0)}, []any{false}},
+		{"int64 1", []any{int64(1)}, []any{true}},
+		{"int64 100", []any{int64(100)}, []any{true}},
+		{"int64 0", []any{int64(0)}, []any{false}},
+		{"uint 1", []any{uint(1)}, []any{true}},
+		{"uint 0", []any{uint(0)}, []any{false}},
+		{"uint8 1", []any{uint8(1)}, []any{true}},
+		{"uint8 0", []any{uint8(0)}, []any{false}},
+		{"uint16 1", []any{uint16(1)}, []any{true}},
+		{"uint16 0", []any{uint16(0)}, []any{false}},
+		{"uint32 1", []any{uint32(1)}, []any{true}},
+		{"uint32 0", []any{uint32(0)}, []any{false}},
+		{"uint64 1", []any{uint64(1)}, []any{true}},
+		{"uint64 0", []any{uint64(0)}, []any{false}},
+		{"float32 1.0", []any{float32(1.0)}, []any{true}},
+		{"float32 0.0", []any{float32(0.0)}, []any{false}},
+		{"float64 1.0", []any{float64(1.0)}, []any{true}},
+		{"float64 0.0", []any{float64(0.0)}, []any{false}},
+		{"string abc", []any{"abc"}, []any{true}},
+		{"string true", []any{"true"}, []any{true}},
+		{"string false", []any{"false"}, []any{false}},
+		{"empty string", []any{""}, []any{false}},
+		{"nil value", []any{nil}, []any{false}},
+		{"complex64 1+1i", []any{complex64(1 + 1i)}, []any{true}},
+		{"complex64 0+0i", []any{complex64(0 + 0i)}, []any{false}},
+		{"complex128 1+1i", []any{complex128(1 + 1i)}, []any{true}},
+		{"complex128 0+0i", []any{complex128(0 + 0i)}, []any{false}},
+		{"nil pointer", []any{(*int)(nil)}, []any{false}},
+		{"non-nil pointer", []any{&iPtr}, []any{true}},
+		{"empty slice", []any{[]int{}}, []any{false}},
 	}
-
-	for _, test := range testCases {
-		got, ok := Bool(test.input)
-		if ok {
-			if got != test.want {
-				t.Errorf("[%s]toBool(%v) = %v; want %v", test.name, test.input, got, test.want)
-			}
-			continue
-		}
-		if got != test.want {
-			t.Errorf("[%s]toBool(%v): conv error", test.name, test.input)
-		}
-
-	}
+	tools.TestFunction(t, testCases, conv.Bool)
 }
