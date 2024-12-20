@@ -1,0 +1,52 @@
+package goroutines_test
+
+import (
+	"context"
+	"fmt"
+	"github.com/tianlin0/go-plat-utils/goroutines"
+	"testing"
+	"time"
+)
+
+func TestGoAsync(t *testing.T) {
+	ctx := context.Background()
+	ctx = context.WithValue(ctx, "fish", "章鱼")
+
+	pId := goroutines.SetContext("", &ctx)
+
+	goroutines.OpenRoutinePool(9)
+	defer goroutines.CloseRoutinePool()
+
+	fmt.Println("start: " + pId)
+
+	for i := 0; i < 10; i++ {
+		fmt.Println("mid: ", i)
+		goroutines.GoAsync(func(params ...interface{}) {
+			fmt.Printf("i=%d \n", params[0].(int))
+			c, pId := goroutines.GetContext()
+			fmt.Println(c, pId)
+			if c != nil {
+				fmt.Println((*c).Value("fish"), pId)
+			}
+			c1 := context.WithValue(*c, "pig", "猪")
+			goroutines.SetContext(pId, &c1)
+		}, nil, i)
+	}
+
+	time.Sleep(2 * time.Second)
+
+	c2, pId2 := goroutines.GetContext()
+	fmt.Println("pig2:", (*c2).Value("pig"), pId2)
+
+	goroutines.DelContext("")
+
+	goroutines.GoAsync(func(params ...interface{}) {
+		c3, pId3 := goroutines.GetContext()
+		if c3 != nil {
+			fmt.Println("pig3:", (*c3).Value("pig"), pId3)
+		}
+
+	}, nil)
+
+	time.Sleep(1 * time.Second)
+}
