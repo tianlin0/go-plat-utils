@@ -1,37 +1,16 @@
-package crypto
+package crypto_test
 
 import (
-	"github.com/stretchr/testify/assert"
+	"github.com/tianlin0/go-plat-utils/crypto"
+	"github.com/tianlin0/go-plat-utils/tools"
 	"testing"
 )
 
 func TestMd5(t *testing.T) {
-	testCases := []struct {
-		name     string
-		input    string
-		expected string
-	}{
-		{
-			name:     "空字符串",
-			input:    "",
-			expected: "d41d8cd98f00b204e9800998ecf8427e",
-		},
-		{
-			name:     "字符串",
-			input:    "test",
-			expected: "098f6bcd4621d373cade4e832627b4f6",
-		},
-		{
-			name:     "带空格的字符串",
-			input:    "hello world",
-			expected: "5eb63bbbe01eeed093cb22bb8f5acdc3",
-		},
+	testCases := []*tools.TestStruct{
+		{"空字符串", []any{""}, []any{"d41d8cd98f00b204e9800998ecf8427e"}},
+		{"字符串", []any{"test"}, []any{"098f6bcd4621d373cade4e832627b4f6"}},
+		{"带空格的字符串", []any{"hello world"}, []any{"5eb63bbbe01eeed093cb22bb8f5acdc3"}},
 	}
-
-	for _, tc := range testCases {
-		t.Run(tc.name, func(t *testing.T) {
-			res := Md5(tc.input)
-			assert.Equal(t, tc.expected, res)
-		})
-	}
+	tools.TestFunction(t, testCases, crypto.Md5)
 }

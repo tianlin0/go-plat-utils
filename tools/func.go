@@ -22,6 +22,7 @@ func GetFunctionName(i any) (name string, isMethod bool) {
 // CallFunction 根据参数，可以调用任何方法
 func CallFunction(function any, args ...any) (result []any, err error) {
 	// 将空接口转换为reflect.Value
+	fnType := reflect.TypeOf(function)
 	fnValue := reflect.ValueOf(function)
 
 	// 检查是否为可调用的函数
@@ -34,6 +35,16 @@ func CallFunction(function any, args ...any) (result []any, err error) {
 	if len(args) > 0 {
 		fnArgs := make([]reflect.Value, len(args))
 		for i, arg := range args {
+			if arg == nil {
+				if i < fnType.NumIn() {
+					fnArgType := fnType.In(i)
+					//需要检查是否是interface类型
+					if fnArgType.Kind() == reflect.Interface {
+						fnArgs[i] = reflect.Zero(reflect.TypeOf((*any)(nil)).Elem())
+						continue
+					}
+				}
+			}
 			fnArgs[i] = reflect.ValueOf(arg)
 		}
 		// 调用函数，捕获panic
@@ -48,7 +59,6 @@ func CallFunction(function any, args ...any) (result []any, err error) {
 		retValues = fnValue.Call(nil)
 	}
 
-	fnType := reflect.TypeOf(function)
 	numOut := fnType.NumOut()
 
 	if numOut == 0 && len(retValues) == 0 {
