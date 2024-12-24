@@ -7,8 +7,8 @@ import (
 	"strings"
 )
 
-// GetFunctionName 获取方法名
-func GetFunctionName(i any) (name string, isMethod bool) {
+// GetFuncName 获取方法名
+func GetFuncName(i any) (name string, isMethod bool) {
 	if fullName, ok := i.(string); ok {
 		return fullName, false
 	}
@@ -19,33 +19,33 @@ func GetFunctionName(i any) (name string, isMethod bool) {
 	return strings.TrimSuffix(shortName, "-fm"), isMethod
 }
 
-// CallFunction 根据参数，可以调用任何方法
-func CallFunction(function any, args ...any) (result []any, err error) {
+// FuncExecute 根据参数，可以调用任何方法
+func FuncExecute(function any, args ...any) (result []any, err error) {
 	// 将空接口转换为reflect.Value
 	fnType := reflect.TypeOf(function)
 	fnValue := reflect.ValueOf(function)
 
 	// 检查是否为可调用的函数
 	if fnValue.Kind() != reflect.Func {
-		return nil, fmt.Errorf("[CallFunction] not function")
+		return nil, fmt.Errorf("[FuncExecute] not function")
 	}
 
 	// 将参数列表转换为reflect.Value切片
 	var retValues []reflect.Value
 	if len(args) > 0 {
-		fnArgs := make([]reflect.Value, len(args))
+		argSlice := make([]reflect.Value, len(args))
 		for i, arg := range args {
 			if arg == nil {
 				if i < fnType.NumIn() {
 					fnArgType := fnType.In(i)
 					//需要检查是否是interface类型
 					if fnArgType.Kind() == reflect.Interface {
-						fnArgs[i] = reflect.Zero(reflect.TypeOf((*any)(nil)).Elem())
+						argSlice[i] = reflect.Zero(reflect.TypeOf((*any)(nil)).Elem())
 						continue
 					}
 				}
 			}
-			fnArgs[i] = reflect.ValueOf(arg)
+			argSlice[i] = reflect.ValueOf(arg)
 		}
 		// 调用函数，捕获panic
 		defer func() {
@@ -54,7 +54,7 @@ func CallFunction(function any, args ...any) (result []any, err error) {
 			}
 		}()
 		// 调用函数并返回结果
-		retValues = fnValue.Call(fnArgs)
+		retValues = fnValue.Call(argSlice)
 	} else {
 		retValues = fnValue.Call(nil)
 	}
@@ -66,7 +66,7 @@ func CallFunction(function any, args ...any) (result []any, err error) {
 	}
 
 	if len(retValues) != numOut {
-		return []any{}, fmt.Errorf("[CallFunction] ret error, "+
+		return []any{}, fmt.Errorf("[FuncExecute] ret error, "+
 			"retValue number is %d, but Type number is %d", len(retValues), numOut)
 	}
 
