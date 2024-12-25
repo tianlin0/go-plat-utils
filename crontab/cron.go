@@ -43,8 +43,8 @@ month      = field(fields[4], months)
 dayOfWeek  = field(fields[5], dow)
 */
 
-// Start 启动定时任务，格式：分钟 小时 天 月 星期
-func Start(jobs ...map[string]func()) error {
+// StartJobs 启动定时任务，格式：分钟 小时 天 月 星期
+func StartJobs(jobs ...map[string]func()) error {
 	runningMu.Lock()
 	defer runningMu.Unlock()
 
@@ -60,25 +60,24 @@ func Start(jobs ...map[string]func()) error {
 		}
 	}
 
-	log.Println("[crontab] Start start:", allKey)
+	log.Println("[crontab] StartJobs start:", allKey)
 
-	hasSuccess := false //如果全部出错的，则不用启动
+	allSuccess := true //如果全部出错的，则不用启动
 	for _, jobMap := range jobs {
 		for times := range jobMap {
 			var err error
 			//列表里需要将所有的内容保存一份，这样就可以到时候进行删除了
 			_, err = oneCron.c.AddFunc(times, jobMap[times])
 			if err != nil {
-				log.Println("[crontab] Start error:", times, err.Error())
-			} else {
-				hasSuccess = true
+				log.Println("[crontab] StartJobs error:", times, err.Error())
+				allSuccess = false
 			}
 		}
 	}
 
 	//没有添加成功，则不用启动
-	if !hasSuccess {
-		return fmt.Errorf("[crontab] Start hasSuccess Fail")
+	if !allSuccess {
+		return fmt.Errorf("[crontab] StartJobs allSuccess Fail")
 	}
 
 	if oneCron.isStart {
