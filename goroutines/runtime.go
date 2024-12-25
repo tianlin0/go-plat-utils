@@ -11,9 +11,17 @@ import (
 )
 
 var (
-	defaultAntsPool *ants.Pool
-	oncePool        = &internal.Once{}
+	defaultAntsPool    *ants.Pool
+	defaultPanicHandle func(err error, retRecover any) //全局Panic后的处理方法
+	oncePool           = &internal.Once{}
 )
+
+// SetDefaultPanicHandle panic的方法
+func SetDefaultPanicHandle(c func(err error, retRecover any)) {
+	if c != nil {
+		defaultPanicHandle = c
+	}
+}
 
 // OpenRoutinePool 启动一个全局的goroutine的协程池，只会执行一次
 func OpenRoutinePool(nums int) *ants.Pool {
@@ -48,7 +56,7 @@ func CloseRoutinePool() {
 }
 
 // GoSync 同步方法
-func GoSync(task func(params ...any), panicHandle func(err error), params ...any) {
+func GoSync(task func(params ...any), params ...any) {
 	defer func() {
 		if err := recover(); err != nil {
 			//打印调用栈信息
@@ -57,9 +65,10 @@ func GoSync(task func(params ...any), panicHandle func(err error), params ...any
 			stackInfo := fmt.Sprintf("%s", buf[:n])
 			stackInfo = strings.ReplaceAll(stackInfo, "\n", "|")
 			errStr := fmt.Sprintf("panic_stack_info: %s ### %s", err, stackInfo)
-			log.Println(errStr)
-			if panicHandle != nil {
-				panicHandle(fmt.Errorf(errStr))
+			if defaultPanicHandle != nil {
+				defaultPanicHandle(fmt.Errorf(errStr), err)
+			} else {
+				log.Println(errStr)
 			}
 			return
 		}
@@ -68,10 +77,10 @@ func GoSync(task func(params ...any), panicHandle func(err error), params ...any
 }
 
 // GoAsync 异步方法
-func GoAsync(task func(params ...any), panicHandle func(err error), params ...any) {
+func GoAsync(task func(params ...any), params ...any) {
 	fun := func() {
 		func(tempParams ...interface{}) {
-			GoSync(task, panicHandle, tempParams...)
+			GoSync(task, tempParams...)
 		}(params...)
 	}
 	taskFun := routine.WrapTask(fun)

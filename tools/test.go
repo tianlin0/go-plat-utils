@@ -10,14 +10,27 @@ type TestStruct struct {
 	Name     string
 	Inputs   []interface{}
 	Expected []interface{}
+	Func     any //每个执行方法不同的情况
 }
 
 // TestFunction 统一检查函数
 func TestFunction(t *testing.T, paramList []*TestStruct, checkFunc any) {
 	for _, tc := range paramList {
 		t.Run(tc.Name, func(t *testing.T) {
-			result, err := CallFunction(checkFunc, tc.Inputs...)
-			funcName, _ := GetFunctionName(checkFunc)
+			var checkFuncTemp any
+			if tc.Func != nil {
+				checkFuncTemp = tc.Func
+			} else {
+				if checkFunc != nil {
+					checkFuncTemp = checkFunc
+				} else {
+					t.Errorf("[%s] error: not set CheckFunc, Input: (%v)", tc.Name, conv.String(tc.Inputs))
+					return
+				}
+			}
+
+			result, err := FuncExecute(checkFuncTemp, tc.Inputs...)
+			funcName, _ := GetFuncName(checkFuncTemp)
 			if err != nil {
 				t.Errorf("[%s] funcName: %s, error: (%v), Input: (%v)", tc.Name, funcName, err, conv.String(tc.Inputs))
 				return

@@ -163,7 +163,7 @@ func AsyncExecuteDataList[T any](timeout time.Duration, dataList []T,
 					//如果完成了，才能关闭
 					waitGroupTemp.done()
 				}
-			}, nil, i, dataList[i])
+			}, i, dataList[i])
 
 		}
 	}

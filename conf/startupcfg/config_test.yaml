@@ -1,0 +1,24 @@
+api: # 接口调用配置 示范
+  service-discovery:
+    domain: "http://www.baidu.com"
+    urls:
+      TemplateCopyInClusterService: /v1/project/{{.projectName}}/get
+      TemplateDeleteCdCheckPolarisGroups: ""
+      TemplateDeleteCdCheckLoadBalances: /v1/project/{{.projectName}}/paas/{{.paasName}}/loadbalancers
+mysql: # mysql 地域/环境/变量名
+  MysqlConnect:
+    address: 127.0.0.1:3306
+    username: root
+    pwEncoded: de6f61d2afa7ac320167a98dab6500248510c0a2fa7e84e03ab3ab6eff0e672c
+    database: db_gdp_server
+custom: # 自定义配置
+  sensitive: # 加密敏感配置
+    tCRPushCommConn: 5a5ded621f3cd9527e58930074b5ef9ec9ff47b9e08d24b8759b2a8dd23b803b
+    tCRPullCommConn: 5a5ded621f3cd9527e58930074b5ef9ec9ff47b9e08d24b8759b2a8dd23b803b
+  normal: # 非加密普通配置
+    AppId: gdp-appserver-go
+    CloseHttpMemCache: false
+    UserProductionAlarmList: aaaaa
+    HostAndPort:
+      host: 0.0.0.0
+      port: 8084

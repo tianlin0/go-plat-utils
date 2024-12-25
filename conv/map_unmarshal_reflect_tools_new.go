@@ -3,7 +3,7 @@ package conv
 import (
 	"fmt"
 	"github.com/tianlin0/go-plat-utils/cond"
-	jsoniter "github.com/tianlin0/go-plat-utils/internal/jsoniter/go"
+	jsoniterForNil "github.com/tianlin0/go-plat-utils/internal/jsoniter/go"
 	"reflect"
 	"strings"
 )
@@ -266,11 +266,11 @@ func (c *toolsService) getSrcStruct(srcStruct interface{}) interface{} {
 	if srcType.Kind() == reflect.String { //字符串类型
 		newStruct := make(map[string]interface{})
 		srcStructString := String(srcStruct)
-		err := jsoniter.UnmarshalFromString(srcStructString, &newStruct)
+		err := jsoniterForNil.UnmarshalFromString(srcStructString, &newStruct)
 		// 数组
 		if err != nil {
 			newList := make([]interface{}, 0)
-			err = jsoniter.UnmarshalFromString(srcStructString, &newList)
+			err = jsoniterForNil.UnmarshalFromString(srcStructString, &newList)
 			if err == nil {
 				srcStruct = newList
 			}
@@ -327,25 +327,25 @@ func (c *toolsService) GetNewSrcAndDst(srcStruct interface{}, dstPoint interface
 func (c *toolsService) extendPartDst(srcByte []byte, srcType reflect.Type, dstPoint interface{}) (interface{}, error) {
 	if srcType.Kind() == reflect.Slice {
 		toPointList := make([]interface{}, 0)
-		err2 := jsoniter.Unmarshal(srcByte, &toPointList)
+		err2 := jsoniterForNil.Unmarshal(srcByte, &toPointList)
 		if err2 == nil {
-			srcByte, err2 = jsoniter.Marshal(toPointList)
+			srcByte, err2 = jsoniterForNil.Marshal(toPointList)
 			if err2 == nil {
-				err := jsoniter.Unmarshal(srcByte, dstPoint)
+				err := jsoniterForNil.Unmarshal(srcByte, dstPoint)
 				return dstPoint, err
 			}
 		}
 	} else {
 		toPointMap := make(map[string]interface{})
-		err2 := jsoniter.Unmarshal(srcByte, &toPointMap)
+		err2 := jsoniterForNil.Unmarshal(srcByte, &toPointMap)
 		if err2 == nil {
 			toPointMap2 := make(map[string]string)
 			for key, val := range toPointMap {
 				toPointMap2[key] = String(val)
 			}
-			srcByte, err2 = jsoniter.Marshal(toPointMap2)
+			srcByte, err2 = jsoniterForNil.Marshal(toPointMap2)
 			if err2 == nil {
-				err := jsoniter.Unmarshal(srcByte, dstPoint)
+				err := jsoniterForNil.Unmarshal(srcByte, dstPoint)
 				return dstPoint, err
 			}
 		}

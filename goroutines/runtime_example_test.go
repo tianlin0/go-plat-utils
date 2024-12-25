@@ -29,7 +29,7 @@ func ExampleGoAsync() {
 			}
 			c1 := context.WithValue(*c, "pig", "猪")
 			goroutines.SetContext(&c1)
-		}, nil, i)
+		}, i)
 	}
 
 	time.Sleep(2 * time.Second)
@@ -43,7 +43,7 @@ func ExampleGoAsync() {
 			fmt.Println("pig3:", (*c3).Value("pig"), (*c3).Value("fish"), pId3)
 		}
 
-	}, nil)
+	})
 
 	time.Sleep(1 * time.Second)
 

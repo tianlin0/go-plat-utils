@@ -3,7 +3,7 @@ package conv
 import (
 	"fmt"
 	"github.com/jinzhu/copier"
-	jsoniter "github.com/tianlin0/go-plat-utils/internal/jsoniter/go"
+	jsoniterForNil "github.com/tianlin0/go-plat-utils/internal/jsoniter/go"
 	"log"
 	"reflect"
 )
@@ -61,11 +61,11 @@ func Unmarshal(srcStruct interface{}, dstPoint interface{}) error {
 	srcStruct, dstPoint = t.GetNewSrcAndDst(srcStruct, dstPoint)
 
 	//2.2 Unmarshal
-	b, err := jsoniter.Marshal(srcStruct)
+	b, err := jsoniterForNil.Marshal(srcStruct)
 	if err != nil {
 		return err
 	}
-	errJson := jsoniter.Unmarshal(b, dstPoint)
+	errJson := jsoniterForNil.Unmarshal(b, dstPoint)
 	if errJson == nil {
 		return nil
 	}

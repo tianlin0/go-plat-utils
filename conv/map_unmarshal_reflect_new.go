@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/jinzhu/copier"
 	"github.com/tianlin0/go-plat-utils/cond"
-	jsoniter "github.com/tianlin0/go-plat-utils/internal/jsoniter/go"
+	jsoniterForNil "github.com/tianlin0/go-plat-utils/internal/jsoniter/go"
 	"log"
 	"reflect"
 	"strconv"
@@ -37,11 +37,11 @@ func AssignTo(srcStruct interface{}, dstPoint interface{}) error {
 	t := new(toolsService)
 	dstStruct, _ := t.GetNewSrcAndDst(dstValue.Interface(), dstPoint)
 
-	b, err := jsoniter.Marshal(dstStruct)
+	b, err := jsoniterForNil.Marshal(dstStruct)
 	if err != nil {
 		return err
 	}
-	errJson := jsoniter.Unmarshal(b, dstPoint)
+	errJson := jsoniterForNil.Unmarshal(b, dstPoint)
 	if errJson == nil {
 		return nil
 	}
@@ -161,11 +161,11 @@ func (c *getNewService) getByDstSlice(srcSlice interface{}, dstType reflect.Type
 
 	toPointList := make([]interface{}, 0)
 
-	srcByte, err2 := jsoniter.Marshal(srcSlice)
+	srcByte, err2 := jsoniterForNil.Marshal(srcSlice)
 	if err2 != nil {
 		return reflect.Value{}, err2
 	}
-	err2 = jsoniter.Unmarshal(srcByte, &toPointList)
+	err2 = jsoniterForNil.Unmarshal(srcByte, &toPointList)
 	if err2 != nil {
 		return reflect.Value{}, err2
 	}
@@ -307,7 +307,7 @@ func (c *getNewService) getByDstMap(srcStruct interface{}, dstType reflect.Type)
 	if dstType.Kind() != reflect.Map {
 		return reflect.Value{}, fmt.Errorf("getByDstMap is not Map:" + dstType.String())
 	}
-	srcByte, err2 := jsoniter.Marshal(srcStruct)
+	srcByte, err2 := jsoniterForNil.Marshal(srcStruct)
 	if err2 != nil {
 		return reflect.Value{}, err2
 	}
@@ -318,7 +318,7 @@ func (c *getNewService) getByDstMap(srcStruct interface{}, dstType reflect.Type)
 	}
 
 	toMap := make(map[string]interface{})
-	err2 = jsoniter.Unmarshal(srcByte, &toMap)
+	err2 = jsoniterForNil.Unmarshal(srcByte, &toMap)
 	if err2 != nil {
 		return reflect.Value{}, err2
 	}
@@ -584,7 +584,7 @@ func (c *getNewService) changeValueStringToStringList(srcValue reflect.Value) ([
 	if srcTypeName == "string" {
 		srcColumnValueString := srcValue.String()
 		arrList := make([]string, 0)
-		err := jsoniter.UnmarshalFromString(srcColumnValueString, &arrList)
+		err := jsoniterForNil.UnmarshalFromString(srcColumnValueString, &arrList)
 		if err == nil {
 			return arrList, true
 		} else {
@@ -870,13 +870,13 @@ func (c *getNewService) getColumnValueFromMap(srcMap interface{}, dstColumn refl
 
 // getColumnValueFromType 从里面拿一个值，而不是取本身
 func (c *getNewService) getColumnValueFromType(srcInterface interface{}, dstColumn reflect.StructField) interface{} {
-	srcByte, err2 := jsoniter.Marshal(srcInterface)
+	srcByte, err2 := jsoniterForNil.Marshal(srcInterface)
 	if err2 != nil {
 		return nil
 	}
 
 	toMap := make(map[string]interface{})
-	err2 = jsoniter.Unmarshal(srcByte, &toMap)
+	err2 = jsoniterForNil.Unmarshal(srcByte, &toMap)
 	if err2 != nil {
 		return nil
 	}

@@ -308,11 +308,11 @@ func (cfg *frozenConfig) Marshal(v interface{}) ([]byte, error) {
 
 func (cfg *frozenConfig) MarshalIndent(v interface{}, prefix, indent string) ([]byte, error) {
 	if prefix != "" {
-		panic(interface{}("prefix is not supported"))
+		panic("prefix is not supported")
 	}
 	for _, r := range indent {
 		if r != ' ' {
-			panic(interface{}("indent can only be space"))
+			panic("indent can only be space")
 		}
 	}
 	newCfg := cfg.configBeforeFrozen
