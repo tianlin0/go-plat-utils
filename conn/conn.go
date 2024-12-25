@@ -5,15 +5,6 @@ import (
 	"github.com/tianlin0/go-plat-utils/conf/startupcfg"
 )
 
-//type connectAPI interface {
-//	Driver() string
-//	Protocol() string
-//	HostAndPort() (string, int)
-//	UserAndPassword() (string, string)
-//	Database() string
-//	Extend() string
-//}
-
 // Connect 数据连接对象
 type Connect struct {
 	Driver   startupcfg.DriverType  `json:"driver,omitempty"`
