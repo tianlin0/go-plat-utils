@@ -1,4 +1,4 @@
-package httputil
+package param
 
 import (
 	"github.com/tianlin0/go-plat-utils/conv"
