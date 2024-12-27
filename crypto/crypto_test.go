@@ -28,6 +28,23 @@ func TestAesCbc(t *testing.T) {
 			}
 			return false
 		}},
+		{"AESEncrypt", []any{"tianlin0"}, []any{true}, func(input string) bool {
+
+			appSecret := "IgkibX71IEf382PT"
+
+			enStr, err := crypto.AESEncrypt(input, []byte(appSecret), appSecret)
+			if err != nil {
+				return false
+			}
+			oldStr, err := crypto.AESDecrypt(enStr, []byte(appSecret), appSecret)
+			if err != nil {
+				return false
+			}
+			if oldStr == input {
+				return true
+			}
+			return false
+		}},
 		{"AesEncryptBase64", []any{"tianlin0"}, []any{true}, func(input string) bool {
 			//每次都会不一样
 			enStr, err := crypto.AesEncryptBase64(input, key)
@@ -99,4 +116,42 @@ func TestAesCbc(t *testing.T) {
 		}},
 	}
 	utils.TestFunction(t, testCases, nil)
+}
+
+func TestCreateRSAKeys(t *testing.T) {
+	rsa := new(crypto.RSASecurity)
+	pub, pri, err := rsa.CreateRSAKeys(0, crypto.PKCS8Type)
+
+	fmt.Println(pub)
+	fmt.Println(pri)
+	fmt.Println(err)
+
+	rsa.SetPublicAndPrivateKey(
+		`-----BEGIN PUBLIC KEY-----
+MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBANQjZeh61+XSP/XgQLv0EeWJylEsTQiV
+r/wUSB2pY7XZyEIJ7czGbl3xe5nXxEMHjlgkWH14VzS3+cPIejrraBECAwEAAQ==
+-----END PUBLIC KEY-----`,
+		`-----BEGIN PRIVATE KEY-----
+MIIBVAIBADANBgkqhkiG9w0BAQEFAASCAT4wggE6AgEAAkEA1CNl6HrX5dI/9eBA
+u/QR5YnKUSxNCJWv/BRIHaljtdnIQgntzMZuXfF7mdfEQweOWCRYfXhXNLf5w8h6
+OutoEQIDAQABAkAhPxb2k2IIq6XIhAfBLSQs5CZoCFheUw9Mo2UV+Pkeg6UW2DHU
+TB1N4DFKlCpGpsYHaPgmpRqEilBtdslcNzJNAiEA7ZSBDicBSwChAdCHBKF6mTSh
+fWgCfcBmItqNLrNrJhMCIQDkleyOFQjeOVxcTm0RA6cC/f/wJ5lc4++c16eL9Y3N
+ywIgUmVDkO30I9f2/xMcEH4Ub9fx/fU5j/VPNt1HQ6AUFCMCIQDXhR/Pare8xrp1
+caBV3Wq3YILSjJOFyIdgCti3FmOH9wIgMT5Fzig0Qsp47jwJ0ICRZCaXFYA0XKPI
+TjWDiQ4P6p8=
+-----END PRIVATE KEY-----
+	`)
+
+	kk, err := rsa.PubKeyEncryptBase64("tiantian")
+	fmt.Println(kk, err)
+
+	mm, err := rsa.PriKeyDecryptBase64(kk)
+	fmt.Println(mm, err)
+
+	nn, err := rsa.SignMd5WithRsa("abc")
+	fmt.Println(nn, err)
+	err = rsa.VerifySignMd5WithRsa("abc", nn)
+	fmt.Println(err)
+
 }
