@@ -1,4 +1,4 @@
-package tools
+package utils
 
 import (
 	"github.com/tianlin0/go-plat-utils/cond"

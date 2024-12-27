@@ -1,4 +1,4 @@
-package tools_test
+package utils_test
 
 func ExampleRemoveItem() {
 

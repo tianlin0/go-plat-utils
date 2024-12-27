@@ -2,13 +2,12 @@ package conv_test
 
 import (
 	"github.com/tianlin0/go-plat-utils/conv"
-	"github.com/tianlin0/go-plat-utils/tools"
 	"testing"
 )
 
 func TestAnyToBool(t *testing.T) {
 	iPtr := 90
-	testCases := []*tools.TestStruct{
+	testCases := []*utils.TestStruct{
 		{"bool true", []any{true}, []any{true, true}},
 		{"bool false", []any{false}, []any{false}},
 		{"int -1", []any{int(-1)}, []any{true}},
@@ -50,5 +49,5 @@ func TestAnyToBool(t *testing.T) {
 		{"non-nil pointer", []any{&iPtr}, []any{true}},
 		{"empty slice", []any{[]int{}}, []any{false}},
 	}
-	tools.TestFunction(t, testCases, conv.Bool)
+	utils.TestFunction(t, testCases, conv.Bool)
 }

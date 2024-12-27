@@ -7,7 +7,6 @@ import (
 	"github.com/tianlin0/go-plat-utils/conf/startupcfg"
 	"github.com/tianlin0/go-plat-utils/conv"
 	"github.com/tianlin0/go-plat-utils/crypto"
-	"github.com/tianlin0/go-plat-utils/tools"
 	"gopkg.in/yaml.v3"
 	"testing"
 )
@@ -39,7 +38,7 @@ func TestStartConfig(t *testing.T) {
 
 	fmt.Println(mysqlPwd, tCRPullCommConn)
 
-	testCases := []*tools.TestStruct{
+	testCases := []*utils.TestStruct{
 		{"api service-discovery domain", []any{"service-discovery"}, []any{"http://www.baidu.com"}, func(paasName string) string {
 			return conf.ServiceAPI(paasName).DomainName()
 		}},
@@ -72,7 +71,7 @@ func TestStartConfig(t *testing.T) {
 			return b
 		}},
 	}
-	tools.TestFunction(t, testCases, nil)
+	utils.TestFunction(t, testCases, nil)
 
 	t.Log(conv.String(conf.All()))
 }

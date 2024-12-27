@@ -6,7 +6,7 @@ import (
 	"github.com/rulego/rulego"
 	"github.com/rulego/rulego/api/types"
 	"github.com/tianlin0/go-plat-utils/templates"
-	"github.com/tianlin0/go-plat-utils/tools"
+	"github.com/tianlin0/go-plat-utils/utils"
 	"strings"
 	"testing"
 )
@@ -22,7 +22,7 @@ func TestTemplates(t *testing.T) {
 		},
 	}
 
-	testCases := []*tools.TestStruct{
+	testCases := []*utils.TestStruct{
 		{"strings.Index", []any{"111/<no value>", "<no value>"}, []any{4}, strings.Index},
 		{"templates.Template", []any{"{{.aaa_aaa}}", map[string]interface{}{"aaa_aaa": "55555"}}, []any{"55555"}, templates.Template},
 		{"templates.Template error", []any{"{{.aaa/aaa}}", map[string]interface{}{"aaa/aaa": "55555"}}, []any{"", fmt.Errorf("template: utils-template-e5a33834c17286b3865ded9360051c98:1: bad character U+002F '/'")}, templates.Template},
@@ -42,7 +42,7 @@ func TestTemplates(t *testing.T) {
 			return ret.Int64(), nil
 		}},
 	}
-	tools.TestFunction(t, testCases, nil)
+	utils.TestFunction(t, testCases, nil)
 }
 
 var amount = 0.8
@@ -50,7 +50,7 @@ var name = "awesome"
 
 func TestEvaluate(t *testing.T) {
 
-	testCases := []*tools.TestStruct{
+	testCases := []*utils.TestStruct{
 		{"Single parameter modified by constant", []any{"foo + 2", map[string]interface{}{
 			"foo": 2.0,
 		}}, []any{4.0}, nil},
@@ -82,7 +82,7 @@ func TestEvaluate(t *testing.T) {
 			"name":   "awesome",
 		}}, []any{"2awesome"}, nil},
 	}
-	tools.TestFunction(t, testCases, templates.Evaluate)
+	utils.TestFunction(t, testCases, templates.Evaluate)
 }
 
 func TestRuleGo(t *testing.T) {

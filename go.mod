@@ -5,11 +5,15 @@ go 1.23.2
 require (
 	github.com/Knetic/govaluate v3.0.0+incompatible
 	github.com/PaesslerAG/gval v1.2.4
+	github.com/andybalholm/brotli v1.1.1
+	github.com/gomodule/redigo v1.9.2
+	github.com/google/uuid v1.6.0
 	github.com/jinzhu/copier v0.4.0
 	github.com/json-iterator/go v1.1.12
 	github.com/lqiz/expr v1.1.4
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd
 	github.com/modern-go/reflect2 v1.0.2
+	github.com/nu7hatch/gouuid v0.0.0-20131221200532-179d4d0c4d8d
 	github.com/panjf2000/ants/v2 v2.10.0
 	github.com/patrickmn/go-cache v2.1.0+incompatible
 	github.com/robfig/cron/v3 v3.0.1
