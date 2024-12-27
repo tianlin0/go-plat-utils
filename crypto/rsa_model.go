@@ -173,8 +173,8 @@ func (r *RSASecurity) PriKeyDecryptBase64(encodeBase64String string) (string, er
 	return string(newStr), nil
 }
 
-// priKeyEncrypt 私钥加密，用于数字签名
-func (r *RSASecurity) priKeyEncrypt(input []byte) ([]byte, error) {
+// PriKeyEncrypt 私钥加密，用于数字签名
+func (r *RSASecurity) PriKeyEncrypt(input []byte) ([]byte, error) {
 	if r.priKey == nil {
 		return []byte(""), fmt.Errorf(`Please set the private key in advance`)
 	}
@@ -186,8 +186,8 @@ func (r *RSASecurity) priKeyEncrypt(input []byte) ([]byte, error) {
 	return io.ReadAll(output)
 }
 
-// pubKeyDecrypt 公钥解密，用于数字签名
-func (r *RSASecurity) pubKeyDecrypt(input []byte) ([]byte, error) {
+// PubKeyDecrypt 公钥解密，用于数字签名
+func (r *RSASecurity) PubKeyDecrypt(input []byte) ([]byte, error) {
 	if r.pubKey == nil {
 		return []byte(""), fmt.Errorf(`Please set the public key in advance`)
 	}
@@ -197,6 +197,28 @@ func (r *RSASecurity) pubKeyDecrypt(input []byte) ([]byte, error) {
 		return []byte(""), err
 	}
 	return io.ReadAll(output)
+}
+
+// PriKeyEncryptBase64 私钥加密
+func (r *RSASecurity) PriKeyEncryptBase64(input string) (string, error) {
+	oldByte, err := r.PriKeyEncrypt([]byte(input))
+	if err != nil {
+		return "", err
+	}
+	return base64.StdEncoding.EncodeToString(oldByte), nil
+}
+
+// PubKeyDecryptBase64 公钥解密
+func (r *RSASecurity) PubKeyDecryptBase64(encodeBase64String string) (string, error) {
+	newByte, err := base64.StdEncoding.DecodeString(encodeBase64String)
+	if err != nil {
+		return "", err
+	}
+	newStr, err := r.PubKeyDecrypt(newByte)
+	if err != nil {
+		return "", err
+	}
+	return string(newStr), nil
 }
 
 // SignMd5 使用RSAWithMD5算法签名
