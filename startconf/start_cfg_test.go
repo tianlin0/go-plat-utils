@@ -48,7 +48,7 @@ func TestGetAllApiUrlMap(t *testing.T) {
 		return str, nil
 	})
 
-	one, _ := startconf.NewStartupForYamlFile("dev.yaml")
+	one, _ := startconf.NewStartupForYamlFile("dev_test.yaml")
 	mapTemp := one.AllApiUrlMap()
 	tempUrl := new(TemplateURL)
 	conv.Unmarshal(mapTemp, tempUrl)

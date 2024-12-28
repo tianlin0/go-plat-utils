@@ -97,7 +97,7 @@ func (s *StartCfg) AllMysqlMap() (map[string]*startupCfg.MysqlConfig, error) {
 func (s *StartCfg) AllRedisMap() (map[string]*startupCfg.RedisConfig, error) {
 	customMapNew := make(map[string]*startupCfg.RedisConfig)
 
-	if s.Mysql != nil {
+	if s.Redis != nil {
 		for key, val := range s.Redis {
 			customMapNew[key] = val
 		}
