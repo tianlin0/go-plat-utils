@@ -2,7 +2,6 @@ package startupcfg
 
 import (
 	jsoniter "github.com/json-iterator/go"
-	"github.com/tianlin0/go-plat-utils/goroutines"
 	"gopkg.in/yaml.v3"
 	"log"
 	"os"
@@ -75,7 +74,7 @@ func (c *ConfigAPI) StartAutoUpdate(callback func(api *ConfigAPI) error, duratio
 	if c.fromFileName == "" {
 		return
 	}
-	goroutines.GoAsync(func(params ...any) {
+	go func() {
 		for {
 			t := time.NewTimer(dur)
 			<-t.C
@@ -94,5 +93,5 @@ func (c *ConfigAPI) StartAutoUpdate(callback func(api *ConfigAPI) error, duratio
 				}
 			}
 		}
-	})
+	}()
 }

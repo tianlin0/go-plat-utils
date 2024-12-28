@@ -10,6 +10,7 @@ require (
 	github.com/fatih/color v1.18.0
 	github.com/gomodule/redigo v1.9.2
 	github.com/google/uuid v1.6.0
+	github.com/iancoleman/orderedmap v0.3.0
 	github.com/jinzhu/copier v0.4.0
 	github.com/json-iterator/go v1.1.12
 	github.com/lestrrat-go/file-rotatelogs v2.4.0+incompatible
@@ -26,6 +27,7 @@ require (
 	github.com/soniah/evaler v2.2.0+incompatible
 	github.com/stretchr/testify v1.9.0
 	github.com/tidwall/gjson v1.18.0
+	github.com/tidwall/sjson v1.2.5
 	github.com/timandy/routine v1.1.4
 	golang.org/x/crypto v0.28.0
 	golang.org/x/net v0.26.0

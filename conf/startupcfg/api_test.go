@@ -7,6 +7,7 @@ import (
 	"github.com/tianlin0/go-plat-utils/conf/startupcfg"
 	"github.com/tianlin0/go-plat-utils/conv"
 	"github.com/tianlin0/go-plat-utils/crypto"
+	"github.com/tianlin0/go-plat-utils/utils"
 	"gopkg.in/yaml.v3"
 	"testing"
 )
@@ -15,11 +16,11 @@ const (
 	encKey = "____tianlin0____"
 )
 
-func init() {
-	startupcfg.SetEncryptHandler(func(m string) (startupcfg.Encrypted, error) {
-		mysqlPwd, _ := crypto.CBCEncrypt(m, encKey)
-		return startupcfg.Encrypted(mysqlPwd), nil
-	})
+func init1() {
+	//startupcfg.SetEncryptHandler(func(m string) (startupcfg.Encrypted, error) {
+	//	mysqlPwd, _ := crypto.CBCEncrypt(m, encKey)
+	//	return startupcfg.Encrypted(mysqlPwd), nil
+	//})
 	startupcfg.SetDecryptHandler(func(m startupcfg.Encrypted) (string, error) {
 		mysqlPwd, _ := crypto.CBCDecrypt(string(m), encKey)
 		return mysqlPwd, nil
@@ -110,10 +111,10 @@ func TestEncryptedMarshal(t *testing.T) {
 }
 
 func TestEncryptedUnMarshal(t *testing.T) {
-	startupcfg.SetEncryptHandler(func(m string) (startupcfg.Encrypted, error) {
-		mysqlPwd, _ := crypto.CBCEncrypt(m, encKey)
-		return startupcfg.Encrypted(mysqlPwd), nil
-	})
+	//startupcfg.SetEncryptHandler(func(m string) (startupcfg.Encrypted, error) {
+	//	mysqlPwd, _ := crypto.CBCEncrypt(m, encKey)
+	//	return startupcfg.Encrypted(mysqlPwd), nil
+	//})
 	startupcfg.SetDecryptHandler(func(m startupcfg.Encrypted) (string, error) {
 		mysqlPwd, _ := crypto.CBCDecrypt(string(m), encKey)
 		return mysqlPwd, nil

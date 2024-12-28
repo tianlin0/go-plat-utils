@@ -7,6 +7,14 @@ func (c *ConfigAPI) All() *StartupConfig {
 	return c.runConf
 }
 
+// ApiAll Database interface
+func (c *ConfigAPI) ApiAll() map[string]*ServiceApiConfig {
+	if c.runConf == nil {
+		return nil
+	}
+	return c.runConf.ApiConfig
+}
+
 // MysqlAll Database interface
 func (c *ConfigAPI) MysqlAll() map[string]*MysqlConfig {
 	if c.runConf == nil {

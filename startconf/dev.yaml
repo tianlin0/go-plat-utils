@@ -1,0 +1,72 @@
+api: # 接口调用配置 示范
+  # 区域/环境/服务名
+  # 全局
+  gdp-appserver-go:
+    domain: http://odp-platform.gdp-appserver-go.gdppubdev3.woa.com
+    urls:
+      TemplateGetCdBiz: /v1/project/{{.projectName}}/paas/{{.paasName}}/cds/{{.cdId}}/get-cd-biz
+      TemplateBindCdBizTag: /v1/project/{{.projectName}}/paas/{{.paasName}}/cds/{{.cdId}}/bind-cd-biz-tag
+      TemplateAppserverSubmitById: /v1/gdp-template/{{.templateId}}
+  odp-external:
+    domain: http://odp-platform.gdp-external.gdppubdev3.woa.com
+    urls:
+      GetPodListByCdId: /v1/project/{{.project_name}}/paas/{{.paas_name}}/cds/{{.cdId}}/pods-informer
+      InsertCI: /v1/project/{{.project_name}}/paas/{{.paas_name}}/cis
+      Insert_CD: /v1/project/{{.project_name}}/paas/{{.paas_name}}/cds
+mysql: # mysql 地域/环境/变量名
+  MysqlConnect:
+    address: gamedb.gdpdev.datacenter.db:10000
+    username: gdpdev
+    pwEncoded: 62457c673b9ff5f732cf87081f1c800a12fae7dcaf5c9fdfa68ae27f0dab7749
+    database: db_gdp_server_dev
+  MysqlConnectODP:
+    address: gamedb.ddpmgr.dcbigdata.db:10001
+    username: idata
+    pwEncoded: fcf13155e37a48f7481fd3f4f4d93a764d0c251293e767eaa753cec85aae7a87
+    database: db_odp_server_dev
+redis: # redis 配置
+  RedisConnect:
+    address: ins.gdpoauth.dcother.db:30000
+    pwEncoded: f3e638bed907bf583a9820c192a2dbcf39b76d89683c767e9f70deb91d68c26b
+    database: 1
+custom: # 自定义配置
+  sensitive: # 加密敏感配置
+    tCRPullCommConn: 2d95eb4772acda55b1060212508936162ad132fdccb4892ba7aec4f3491d6ebb
+    defaultSensitiveAppKey: b5f411796069c770542d8d8b112912689b972a226d6593de6d49e188159d571cbf92d844266b409acf080ef2113af11c
+    defaultRTXLoginToken: e7a63d24684204068e3084c8483fcee4e7204b3cd33378326a38693271409a23ce99438a88ef7ef6365d7d0f2acf1d0c
+    ClientSec: abb51712f15790ed3f829c809f4ad859a237571617a36fd1128c20932ad52a4ba049b37f4fd4a88b0c88bb11bfa65f124cd6b7a38d13741c6220fb5fcf8e74a2
+    paasDemoToken: e4db63a55fa9593218b42ddcf60321167c175abfb719b62b03b179d50544d04110f22cad158d9ec7b898f70120d6bba7
+    TCRSecId: ea06032655f9b6b3868cd234af35c9ce0627884e4237dcaff14fd8744942044a0e86bc0dfccd82346ef634f1844b5755814fec27c1ad69f1560b616e3a94722e
+    TCRSecKey: 5a829b4f3049583a4d5f10b84e987dd2cebf4215cf8a1d0a59f46cbd28a2a163c3c84f7493aec015a6501fbbf445b35d
+  normal: # 非加密普通配置
+    UserBlackAuthConfigList:
+      - userIdMatchRules:
+          characters:
+            - "gdp_"
+            - "v_"
+        forbiddenPolicyKeys:
+          - module: cd
+            policy_key: CD_WEBSHELL_LOGIN_INTERVAL
+          - module: cd
+            policy_key: CD_WEBSHELL_LOGIN_INTERVAL_RELEASE
+    ClientSecret: "{{.ClientSec}}"
+    GdpExternalOrigin: http://odp-platform.gdp-external.gdppubdev3.woa.com
+    TemplateIdBatchDeleteCd: i31cefk85xe
+    TemplateIdCopyCd: wk087rt0001
+    TemplateIdCopyCdWithCdId: wk087rt0002
+    TemporalConn:
+      host: odp-platform.temporal.gdppubdev3.woa.com
+      port: 80
+    DefaultRTXLoginToken: "{{.defaultRTXLoginToken}}"
+    DefaultSystemRoleNameMap:
+      project:
+        - project_managers
+        - project_operators
+      paas:
+        - paas_managers
+      business:
+        - business_managers
+        - business_users
+    HostAndPort:
+      host: 0.0.5.0
+      port: 8084

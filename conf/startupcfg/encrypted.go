@@ -11,28 +11,26 @@ type (
 )
 
 var (
-	decryptFunc = func(e Encrypted) (string, error) {
-		return string(e), nil
-	} // 默认的密码直接返回
 	encryptFunc = func(e string) (Encrypted, error) {
 		return Encrypted(e), nil
 	} // 默认将字符串转化为Encrypted类型
+	decryptFunc = func(e Encrypted) (string, error) {
+		return string(e), nil
+	} // 默认的密码直接返回
 )
 
-// SetDecryptHandler 设置解密函数
-func SetDecryptHandler(f func(m Encrypted) (string, error)) {
-	if f == nil {
-		return
+// setEncryptHandler 设置加密函数,一般不需要设置
+func setEncryptHandler(encryptF func(m string) (Encrypted, error)) {
+	if encryptF != nil {
+		encryptFunc = encryptF
 	}
-	decryptFunc = f
 }
 
-// SetEncryptHandler 设置加密函数
-func SetEncryptHandler(f func(m string) (Encrypted, error)) {
-	if f == nil {
-		return
+// SetDecryptHandler 设置解密函数
+func SetDecryptHandler(decryptF func(m Encrypted) (string, error)) {
+	if decryptF != nil {
+		decryptFunc = decryptF
 	}
-	encryptFunc = f
 }
 
 // Get 获取解密串儿
