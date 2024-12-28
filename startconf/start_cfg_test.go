@@ -23,8 +23,8 @@ type TemplateURL struct {
 type GdpConfig struct {
 	HostAndPort              *conn.Connect
 	MysqlConnect             *startupcfg.MysqlConfig
-	MysqlConnectODP          *conn.Connect
-	RedisConnect             *conn.Connect
+	MysqlConnectODP          *startupcfg.MysqlConfig
+	RedisConnect             *startupcfg.RedisConfig
 	GdpExternalOrigin        string
 	ClientSecret             string
 	TemplateIdBatchDeleteCd  string //批量删除部署的模板ID
@@ -49,23 +49,24 @@ func TestGetAllApiUrlMap(t *testing.T) {
 	})
 
 	one, _ := startconf.NewStartupForYamlFile("dev.yaml")
-	mapTemp := one.GetAllApiUrlMap()
+	mapTemp := one.AllApiUrlMap()
 	tempUrl := new(TemplateURL)
 	conv.Unmarshal(mapTemp, tempUrl)
 
 	fmt.Println(conv.String(tempUrl))
 
-	cMap, _ := one.GetAllCustomMap()
+	cMap, _ := one.AllCustomMap()
 
 	tempCMap := new(GdpConfig)
 	conv.Unmarshal(cMap, tempCMap)
 
-	fmt.Println(conv.String(tempCMap))
-
-	ccTemp, err := one.GetAllMysqlMap()
-
+	ccTemp, _ := one.AllMysqlMap()
 	conv.Unmarshal(ccTemp, tempCMap)
 
-	fmt.Println(tempCMap, err)
+	ccTemp2, _ := one.AllRedisMap()
+
+	conv.Unmarshal(ccTemp2, tempCMap)
+
+	fmt.Println(conv.String(tempCMap))
 
 }

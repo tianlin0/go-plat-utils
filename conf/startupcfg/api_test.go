@@ -17,17 +17,16 @@ const (
 )
 
 func init1() {
-	//startupcfg.SetEncryptHandler(func(m string) (startupcfg.Encrypted, error) {
-	//	mysqlPwd, _ := crypto.CBCEncrypt(m, encKey)
-	//	return startupcfg.Encrypted(mysqlPwd), nil
-	//})
 	startupcfg.SetDecryptHandler(func(m startupcfg.Encrypted) (string, error) {
 		mysqlPwd, _ := crypto.CBCDecrypt(string(m), encKey)
 		return mysqlPwd, nil
 	})
+
 }
 
 func TestStartConfig(t *testing.T) {
+	init1()
+
 	conf, err := startupcfg.NewByYamlFile("config_test.yaml")
 	if err != nil {
 		t.Error(err)
@@ -52,15 +51,8 @@ func TestStartConfig(t *testing.T) {
 		{"mysql MysqlConnect username", []any{"MysqlConnect"}, []any{"root"}, func(mysqlName string) string {
 			return conf.Mysql(mysqlName).User()
 		}},
-		{"mysql MysqlConnect pwd", []any{"MysqlConnect"}, []any{"root"}, func(mysqlName string) string {
-			return conf.Mysql(mysqlName).Password()
-		}},
 		{"mysql MysqlConnect database", []any{"MysqlConnect"}, []any{"db_gdp_server"}, func(mysqlName string) string {
 			return conv.String(conf.Mysql(mysqlName).DatabaseName())
-		}},
-		{"custom sensitive tCRPullCommConn", []any{"tCRPullCommConn"}, []any{"datamore@2019"}, func(mysqlName string) string {
-			str, _ := conf.CustomSensitive(mysqlName)
-			return str
 		}},
 		{"custom normal AppId", []any{"AppId"}, []any{"gdp-appserver-go"}, func(mysqlName string) string {
 			str := conf.CustomNormal(mysqlName)
@@ -70,6 +62,13 @@ func TestStartConfig(t *testing.T) {
 			str := conf.CustomNormal(mysqlName)
 			b, _ := conv.Bool(str)
 			return b
+		}},
+		{"mysql MysqlConnect pwd", []any{"MysqlConnect"}, []any{"root"}, func(mysqlName string) string {
+			return conf.Mysql(mysqlName).Password()
+		}},
+		{"custom sensitive tCRPullCommConn", []any{"tCRPullCommConn"}, []any{"datamore@2019"}, func(mysqlName string) string {
+			str, _ := conf.CustomSensitive(mysqlName)
+			return str
 		}},
 	}
 	utils.TestFunction(t, testCases, nil)
@@ -111,14 +110,7 @@ func TestEncryptedMarshal(t *testing.T) {
 }
 
 func TestEncryptedUnMarshal(t *testing.T) {
-	//startupcfg.SetEncryptHandler(func(m string) (startupcfg.Encrypted, error) {
-	//	mysqlPwd, _ := crypto.CBCEncrypt(m, encKey)
-	//	return startupcfg.Encrypted(mysqlPwd), nil
-	//})
-	startupcfg.SetDecryptHandler(func(m startupcfg.Encrypted) (string, error) {
-		mysqlPwd, _ := crypto.CBCDecrypt(string(m), encKey)
-		return mysqlPwd, nil
-	})
+	init1()
 
 	jsonStr := `{"username":"","pwEncoded":"root","address":"","database":"","charset":""}`
 

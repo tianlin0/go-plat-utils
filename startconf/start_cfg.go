@@ -24,7 +24,7 @@ type StartCfg struct {
 	Redis           map[string]*startupCfg.RedisConfig
 	Api             map[string]*startupCfg.ServiceApiConfig
 	Custom          map[string]interface{}
-	CustomSensitive map[string]string
+	CustomSensitive map[string]startupCfg.Encrypted
 }
 
 func getInstanceFromYaml(isFilePathName bool, configFile string) (*startupCfg.ConfigAPI, error) {
@@ -71,7 +71,8 @@ func commGetStartup(sConf *startupCfg.ConfigAPI) (*StartCfg, error) {
 	return startTemp, nil
 }
 
-func (s *StartCfg) GetAllApiUrlMap() map[string]string {
+// AllApiUrlMap 所有api地址列表
+func (s *StartCfg) AllApiUrlMap() map[string]string {
 	allApi := make(map[string]string)
 	allUrlList := s.getAllApiUrl()
 	for _, oneUrl := range allUrlList {
@@ -80,12 +81,41 @@ func (s *StartCfg) GetAllApiUrlMap() map[string]string {
 	return allApi
 }
 
-func (s *StartCfg) GetAllCustomMap() (map[string]interface{}, error) {
+// AllMysqlMap 所有mysql配置列表
+func (s *StartCfg) AllMysqlMap() (map[string]*startupCfg.MysqlConfig, error) {
+	customMapNew := make(map[string]*startupCfg.MysqlConfig)
+
+	if s.Mysql != nil {
+		for key, val := range s.Mysql {
+			customMapNew[key] = val
+		}
+	}
+	return customMapNew, nil
+}
+
+// AllRedisMap 所有redis配置
+func (s *StartCfg) AllRedisMap() (map[string]*startupCfg.RedisConfig, error) {
+	customMapNew := make(map[string]*startupCfg.RedisConfig)
+
+	if s.Mysql != nil {
+		for key, val := range s.Redis {
+			customMapNew[key] = val
+		}
+	}
+	return customMapNew, nil
+}
+
+// AllCustomMap 所有自定义配置
+func (s *StartCfg) AllCustomMap() (map[string]interface{}, error) {
 	customMapNew := s.Custom
 	if len(s.CustomSensitive) > 0 {
 		customStr := conv.String(customMapNew)
 		if customStr != "" {
-			postData, err := templates.Template(customStr, s.CustomSensitive)
+			decodeMap := make(map[string]string)
+			for k, en := range s.CustomSensitive {
+				decodeMap[k], _ = en.Get()
+			}
+			postData, err := templates.Template(customStr, decodeMap)
 			if err != nil {
 				return nil, err
 			}
@@ -96,18 +126,6 @@ func (s *StartCfg) GetAllCustomMap() (map[string]interface{}, error) {
 			}
 		}
 	}
-	return customMapNew, nil
-}
-
-func (s *StartCfg) GetAllMysqlMap() (map[string]*startupCfg.MysqlConfig, error) {
-	customMapNew := make(map[string]*startupCfg.MysqlConfig)
-
-	if s.Mysql != nil {
-		for key, val := range s.Mysql {
-			customMapNew[key] = val
-		}
-	}
-
 	return customMapNew, nil
 }
 

@@ -32,7 +32,7 @@ func (c *ConfigAPI) RedisAll() map[string]*RedisConfig {
 }
 
 // CustomSensitiveAll get all custom sensitive configs(kv)
-func (c *ConfigAPI) CustomSensitiveAll() map[string]string {
+func (c *ConfigAPI) CustomSensitiveAll() map[string]Encrypted {
 	if c.runConf == nil {
 		return nil
 	}
@@ -43,12 +43,9 @@ func (c *ConfigAPI) CustomSensitiveAll() map[string]string {
 	if cCfg.Sensitive == nil {
 		return nil
 	}
-	newSensitive := make(map[string]string)
+	newSensitive := make(map[string]Encrypted)
 	for s, encrypted := range cCfg.Sensitive {
-		m, err := encrypted.Get()
-		if err == nil {
-			newSensitive[s] = m
-		}
+		newSensitive[s] = encrypted
 	}
 	return newSensitive
 }
