@@ -1,27 +1,11 @@
 package crypto_test
 
 import (
-	"crypto/hmac"
-	"crypto/sha256"
-	"encoding/hex"
 	"fmt"
 	"github.com/tianlin0/go-plat-utils/crypto"
 	"github.com/tianlin0/go-plat-utils/utils"
 	"testing"
 )
-
-// HashSHA256 转换为sha256字符
-func HashSHA256(s string) string {
-	hash := sha256.Sum256([]byte(s))
-	return hex.EncodeToString(hash[:])
-}
-
-// HmacSha256 转化为hmac
-func HmacSha256(s, secret string) string {
-	hashed := hmac.New(sha256.New, []byte(secret))
-	hashed.Write([]byte(s))
-	return hex.EncodeToString(hashed.Sum(nil))
-}
 
 func TestAesCbc(t *testing.T) {
 	key := "jasonsjiang29121"
