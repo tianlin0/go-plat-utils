@@ -14,8 +14,8 @@ func Md5(s string) string {
 	return hex.EncodeToString(d[:])
 }
 
-// HashSHA256 转换为sha256字符
-func HashSHA256(s string) string {
+// HashSha256 转换为sha256字符
+func HashSha256(s string) string {
 	hash := sha256.Sum256([]byte(s))
 	return hex.EncodeToString(hash[:])
 }

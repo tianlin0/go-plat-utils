@@ -31,9 +31,9 @@ func getAllKeyString(key string) string {
 	return "abcdefghijklmnop" //默认的key
 }
 
-// CBCEncrypt 加密
+// CbcEncrypt 加密
 // encryptOri encrypt plain text by key
-func CBCEncrypt(plainStr string, key string, en Encoder) (string, error) {
+func CbcEncrypt(plainStr string, key string, en Encoder) (string, error) {
 	var ciphertext []byte
 	var err error
 
@@ -77,9 +77,9 @@ func CBCEncrypt(plainStr string, key string, en Encoder) (string, error) {
 	return en(ciphertext), nil
 }
 
-// CBCDecrypt 解密
+// CbcDecrypt 解密
 // decryptOri decrypt cypher text by key
-func CBCDecrypt(cipherStr string, key string, de Decoder) (string, error) {
+func CbcDecrypt(cipherStr string, key string, de Decoder) (string, error) {
 	var ciphertext []byte
 	var err error
 
