@@ -10,6 +10,7 @@ import (
 func TestAesCbc(t *testing.T) {
 	key := "jasonsjiang29121"
 	testCases := []*utils.TestStruct{
+		{"hello world", []any{"hello world"}, []any{"5eb63bbbe01eeed093cb22bb8f5acdc3"}, crypto.Md5},
 		{"空字符串", []any{""}, []any{"d41d8cd98f00b204e9800998ecf8427e"}, crypto.Md5},
 		{"字符串", []any{"test"}, []any{"098f6bcd4621d373cade4e832627b4f6"}, crypto.Md5},
 		{"带空格的字符串", []any{"hello world"}, []any{"5eb63bbbe01eeed093cb22bb8f5acdc3"}, crypto.Md5},
@@ -19,10 +20,29 @@ func TestAesCbc(t *testing.T) {
 			if err != nil {
 				return false
 			}
+
 			oldStr, err := crypto.CbcDecrypt(enStr, key, nil)
 			if err != nil {
 				return false
 			}
+			if oldStr == input {
+				return true
+			}
+			return false
+		}},
+		{"AesCbcEncrypt", []any{"tianlin0"}, []any{true}, func(input string) bool {
+			enStr, err := crypto.AesCbcEncrypt(input, key, nil)
+			if err != nil {
+				return false
+			}
+
+			oldStr, err := crypto.AesCbcDecrypt(enStr, key, nil)
+			if err != nil {
+				return false
+			}
+
+			fmt.Println(input, enStr, oldStr)
+
 			if oldStr == input {
 				return true
 			}

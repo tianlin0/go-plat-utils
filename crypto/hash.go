@@ -6,12 +6,23 @@ import (
 	"crypto/sha256"
 	"encoding/base64"
 	"encoding/hex"
+	"fmt"
+	"github.com/marspere/goencrypt"
 )
 
 // Md5 计算出md5的值
 func Md5(s string) string {
 	d := md5.Sum([]byte(s))
+	_, err := goencrypt.MD5("hello world")
+	if err != nil {
+		fmt.Println(err)
+	}
 	return hex.EncodeToString(d[:])
+}
+
+// _md5Value 计算出md5的所有值
+func _md5Value(s string) (goencrypt.MessageDigest, error) {
+	return goencrypt.MD5(s)
 }
 
 // HashSha256 转换为sha256字符

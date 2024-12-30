@@ -7,6 +7,7 @@ import (
 	"crypto/rand"
 	"encoding/hex"
 	"fmt"
+	"github.com/marspere/goencrypt"
 	"github.com/tianlin0/go-plat-utils/goroutines"
 	"io"
 )
@@ -33,7 +34,7 @@ func getAllKeyString(key string) string {
 
 // CbcEncrypt 加密
 // encryptOri encrypt plain text by key
-func CbcEncrypt(plainStr string, key string, en Encoder) (string, error) {
+func CbcEncrypt(plainStr string, key string, en EnDeCoder) (string, error) {
 	var ciphertext []byte
 	var err error
 
@@ -62,8 +63,7 @@ func CbcEncrypt(plainStr string, key string, en Encoder) (string, error) {
 
 		err = nil
 
-		stream := cipher.NewCBCEncrypter(block, iv)
-		stream.CryptBlocks(ciphertext[aes.BlockSize:], plaintext)
+		cipher.NewCBCEncrypter(block, iv).CryptBlocks(ciphertext[aes.BlockSize:], plaintext)
 	})
 
 	if err != nil {
@@ -71,15 +71,15 @@ func CbcEncrypt(plainStr string, key string, en Encoder) (string, error) {
 	}
 
 	if en == nil {
-		en = hex.EncodeToString
+		en = new(HexCoder)
 	}
 
-	return en(ciphertext), nil
+	return en.Encode(ciphertext), nil
 }
 
 // CbcDecrypt 解密
 // decryptOri decrypt cypher text by key
-func CbcDecrypt(cipherStr string, key string, de Decoder) (string, error) {
+func CbcDecrypt(cipherStr string, key string, de EnDeCoder) (string, error) {
 	var ciphertext []byte
 	var err error
 
@@ -90,10 +90,10 @@ func CbcDecrypt(cipherStr string, key string, de Decoder) (string, error) {
 		var block cipher.Block
 
 		if de == nil {
-			de = hex.DecodeString
+			de = new(HexCoder)
 		}
 
-		ciphertext, err = de(cipherStr)
+		ciphertext, err = de.Decode(cipherStr)
 		if err != nil {
 			return
 		}
@@ -121,4 +121,51 @@ func CbcDecrypt(cipherStr string, key string, de Decoder) (string, error) {
 		return "", err
 	}
 	return string(bytes.TrimRight(ciphertext, string([]byte{0}))), nil
+}
+
+// AesCbcEncrypt 加密
+// decryptOri decrypt cypher text by key
+func AesCbcEncrypt(plainStr string, key string, en EnDeCoder) (string, error) {
+	key = getAllKeyString(key)
+
+	keyByte := []byte(key)
+
+	cipher, err := goencrypt.NewAESCipher(keyByte, keyByte, goencrypt.CBCMode, goencrypt.PkcsZero, goencrypt.PrintHex)
+	if err != nil {
+		return "", err
+	}
+	cipherText, err := cipher.AESEncrypt([]byte(plainStr))
+	if err != nil {
+		return "", err
+	}
+	originText, err := hex.DecodeString(cipherText)
+	if err != nil {
+		return "", err
+	}
+	if en == nil {
+		en = new(HexCoder)
+	}
+	return en.Encode(originText), nil
+}
+
+// AesCbcDecrypt 解密
+// decryptOri decrypt cypher text by key
+func AesCbcDecrypt(cipherStr string, key string, de EnDeCoder) (string, error) {
+	key = getAllKeyString(key)
+
+	keyByte := []byte(key)
+
+	if de == nil {
+		de = new(HexCoder)
+	}
+	cipherTextTemp, err := de.Decode(cipherStr)
+	if err != nil {
+		return "", err
+	}
+
+	cipher, err := goencrypt.NewAESCipher(keyByte, keyByte, goencrypt.CBCMode, goencrypt.PkcsZero, goencrypt.PrintHex)
+	if err != nil {
+		return "", err
+	}
+	return cipher.AESDecrypt(hex.EncodeToString(cipherTextTemp))
 }

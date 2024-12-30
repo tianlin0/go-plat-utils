@@ -2,12 +2,11 @@ package crypto
 
 import (
 	"bytes"
-	"encoding/base64"
 	"encoding/gob"
 )
 
 // GobEncode 序列化一个对象
-func GobEncode(s interface{}, en Encoder) (string, error) {
+func GobEncode(s interface{}, en EnDeCoder) (string, error) {
 	buf := new(bytes.Buffer)
 	enc := gob.NewEncoder(buf)
 
@@ -17,19 +16,19 @@ func GobEncode(s interface{}, en Encoder) (string, error) {
 	}
 
 	if en == nil {
-		en = base64.StdEncoding.EncodeToString
+		en = new(Base64Coder)
 	}
 
-	return en(buf.Bytes()), nil
+	return en.Encode(buf.Bytes()), nil
 }
 
 // GobDecode 反序列化一个对象
-func GobDecode(s string, data interface{}, de Decoder) error {
+func GobDecode(s string, data interface{}, de EnDeCoder) error {
 	var b bytes.Buffer
 	if de == nil {
-		de = base64.StdEncoding.DecodeString
+		de = new(Base64Coder)
 	}
-	old, err := de(s)
+	old, err := de.Decode(s)
 	if err != nil {
 		return err
 	}

@@ -9,7 +9,6 @@ import (
 	"crypto/sha1"
 	"crypto/sha256"
 	"crypto/x509"
-	"encoding/base64"
 	"encoding/pem"
 	"fmt"
 	"io"
@@ -152,23 +151,23 @@ func (r *RSASecurity) PriKeyDecryptByte(input []byte) ([]byte, error) {
 }
 
 // PubKeyEncrypt 公钥加密
-func (r *RSASecurity) PubKeyEncrypt(input string, en Encoder) (string, error) {
+func (r *RSASecurity) PubKeyEncrypt(input string, en EnDeCoder) (string, error) {
 	oldByte, err := r.PubKeyEncryptByte([]byte(input))
 	if err != nil {
 		return "", err
 	}
 	if en == nil {
-		en = base64.StdEncoding.EncodeToString
+		en = new(Base64Coder)
 	}
-	return en(oldByte), nil
+	return en.Encode(oldByte), nil
 }
 
 // PriKeyDecrypt 私钥解密
-func (r *RSASecurity) PriKeyDecrypt(encodeBase64String string, de Decoder) (string, error) {
+func (r *RSASecurity) PriKeyDecrypt(encodeBase64String string, de EnDeCoder) (string, error) {
 	if de == nil {
-		de = base64.StdEncoding.DecodeString
+		de = new(Base64Coder)
 	}
-	newByte, err := de(encodeBase64String)
+	newByte, err := de.Decode(encodeBase64String)
 	if err != nil {
 		return "", err
 	}
@@ -206,23 +205,23 @@ func (r *RSASecurity) PubKeyDecryptByte(input []byte) ([]byte, error) {
 }
 
 // PriKeyEncrypt 私钥加密
-func (r *RSASecurity) PriKeyEncrypt(input string, en Encoder) (string, error) {
+func (r *RSASecurity) PriKeyEncrypt(input string, en EnDeCoder) (string, error) {
 	oldByte, err := r.PriKeyEncryptByte([]byte(input))
 	if err != nil {
 		return "", err
 	}
 	if en == nil {
-		en = base64.StdEncoding.EncodeToString
+		en = new(Base64Coder)
 	}
-	return en(oldByte), nil
+	return en.Encode(oldByte), nil
 }
 
 // PubKeyDecrypt 公钥解密
-func (r *RSASecurity) PubKeyDecrypt(encodeBase64String string, de Decoder) (string, error) {
+func (r *RSASecurity) PubKeyDecrypt(encodeBase64String string, de EnDeCoder) (string, error) {
 	if de == nil {
-		de = base64.StdEncoding.DecodeString
+		de = new(Base64Coder)
 	}
-	newByte, err := de(encodeBase64String)
+	newByte, err := de.Decode(encodeBase64String)
 	if err != nil {
 		return "", err
 	}
@@ -234,7 +233,7 @@ func (r *RSASecurity) PubKeyDecrypt(encodeBase64String string, de Decoder) (stri
 }
 
 // SignMd5 使用RSAWithMD5算法签名
-func (r *RSASecurity) SignMd5(data string, en Encoder) (string, error) {
+func (r *RSASecurity) SignMd5(data string, en EnDeCoder) (string, error) {
 	md5Hash := md5.New()
 	sData := []byte(data)
 	md5Hash.Write(sData)
@@ -243,14 +242,14 @@ func (r *RSASecurity) SignMd5(data string, en Encoder) (string, error) {
 	signByte, err := rsa.SignPKCS1v15(rand.Reader, r.priKey, crypto.MD5, hashed)
 
 	if en == nil {
-		en = base64.StdEncoding.EncodeToString
+		en = new(Base64Coder)
 	}
 
-	return en(signByte), err
+	return en.Encode(signByte), err
 }
 
 // SignSha1 使用RSAWithSHA1算法签名
-func (r *RSASecurity) SignSha1(data string, en Encoder) (string, error) {
+func (r *RSASecurity) SignSha1(data string, en EnDeCoder) (string, error) {
 	sha1Hash := sha1.New()
 	sData := []byte(data)
 	sha1Hash.Write(sData)
@@ -259,13 +258,13 @@ func (r *RSASecurity) SignSha1(data string, en Encoder) (string, error) {
 	signByte, err := rsa.SignPKCS1v15(rand.Reader, r.priKey, crypto.SHA1, hashed)
 
 	if en == nil {
-		en = base64.StdEncoding.EncodeToString
+		en = new(Base64Coder)
 	}
-	return en(signByte), err
+	return en.Encode(signByte), err
 }
 
 // SignSha256 使用RSAWithSHA256算法签名
-func (r *RSASecurity) SignSha256(data string, en Encoder) (string, error) {
+func (r *RSASecurity) SignSha256(data string, en EnDeCoder) (string, error) {
 	sha256Hash := sha256.New()
 	sData := []byte(data)
 	sha256Hash.Write(sData)
@@ -273,17 +272,17 @@ func (r *RSASecurity) SignSha256(data string, en Encoder) (string, error) {
 
 	signByte, err := rsa.SignPKCS1v15(rand.Reader, r.priKey, crypto.SHA256, hashed)
 	if en == nil {
-		en = base64.StdEncoding.EncodeToString
+		en = new(Base64Coder)
 	}
-	return en(signByte), err
+	return en.Encode(signByte), err
 }
 
 // VerifySignMd5 使用RSAWithMD5验证签名
-func (r *RSASecurity) VerifySignMd5(data string, signData string, de Decoder) error {
+func (r *RSASecurity) VerifySignMd5(data string, signData string, de EnDeCoder) error {
 	if de == nil {
-		de = base64.StdEncoding.DecodeString
+		de = new(Base64Coder)
 	}
-	sign, err := de(signData)
+	sign, err := de.Decode(signData)
 	if err != nil {
 		return err
 	}
@@ -293,11 +292,11 @@ func (r *RSASecurity) VerifySignMd5(data string, signData string, de Decoder) er
 }
 
 // VerifySignSha1 使用RSAWithSHA1验证签名
-func (r *RSASecurity) VerifySignSha1(data string, signData string, de Decoder) error {
+func (r *RSASecurity) VerifySignSha1(data string, signData string, de EnDeCoder) error {
 	if de == nil {
-		de = base64.StdEncoding.DecodeString
+		de = new(Base64Coder)
 	}
-	sign, err := de(signData)
+	sign, err := de.Decode(signData)
 	if err != nil {
 		return err
 	}
@@ -307,12 +306,12 @@ func (r *RSASecurity) VerifySignSha1(data string, signData string, de Decoder) e
 }
 
 // VerifySignSha256 使用RSAWithSHA256验证签名
-func (r *RSASecurity) VerifySignSha256(data string, signData string, de Decoder) error {
+func (r *RSASecurity) VerifySignSha256(data string, signData string, de EnDeCoder) error {
 	if de == nil {
-		de = base64.StdEncoding.DecodeString
+		de = new(Base64Coder)
 	}
 
-	sign, err := de(signData)
+	sign, err := de.Decode(signData)
 	if err != nil {
 		return err
 	}

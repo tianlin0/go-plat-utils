@@ -7,19 +7,41 @@ import (
 	"encoding/base64"
 )
 
-func pKCS5Padding(ciphertext []byte, blockSize int) []byte {
-	padding := blockSize - len(ciphertext)%blockSize
-	padText := bytes.Repeat([]byte{byte(padding)}, padding)
-	return append(ciphertext, padText...)
+// The blockSize argument should be 16, 24, or 32.
+// Corresponding AES-128, AES-192, or AES-256.
+func pkcs7Padding(plainText []byte, blockSize int) []byte {
+	padding := blockSize - len(plainText)%blockSize
+	paddingText := bytes.Repeat([]byte{byte(padding)}, padding)
+	return append(plainText, paddingText...)
 }
 
-func pKCS5UnPadding(origData []byte) []byte {
-	length := len(origData)
-	unPadding := int(origData[length-1])
+func pkcs7UnPadding(plainText []byte) []byte {
+	length := len(plainText)
+	unPadding := int(plainText[length-1])
 	if length-unPadding < 0 { // 不能<0
 		return []byte{}
 	}
-	return origData[:(length - unPadding)]
+	return plainText[:length-unPadding]
+}
+
+func zeroPadding(plainText []byte, blockSize int) []byte {
+	if len(plainText)%blockSize != 0 {
+		paddingSize := blockSize - len(plainText)%blockSize
+		paddingText := bytes.Repeat([]byte{byte(0)}, paddingSize)
+		plainText = append(plainText, paddingText...)
+	}
+	return plainText
+}
+
+func unZeroPadding(plainText []byte) []byte {
+	length := len(plainText)
+	count := 1
+	for i := length - 1; i > 0; i-- {
+		if plainText[i] == 0 && plainText[i-1] == plainText[i] {
+			count++
+		}
+	}
+	return plainText[:length-count]
 }
 
 func aesEncrypt(origData, key []byte, iv string) ([]byte, error) {
@@ -28,7 +50,7 @@ func aesEncrypt(origData, key []byte, iv string) ([]byte, error) {
 		return nil, err
 	}
 	blockSize := block.BlockSize()
-	origData = pKCS5Padding(origData, blockSize)
+	origData = pkcs7Padding(origData, blockSize)
 
 	var ivBytes []byte
 	if iv == "" {
@@ -59,7 +81,7 @@ func aesDecrypt(crypt, key []byte, iv string) ([]byte, error) {
 	origData := make([]byte, len(crypt))
 
 	blockMode.CryptBlocks(origData, crypt)
-	origData = pKCS5UnPadding(origData)
+	origData = pkcs7UnPadding(origData)
 	return origData, nil
 }
 

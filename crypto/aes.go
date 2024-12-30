@@ -1,9 +1,7 @@
 package crypto
 
-import "encoding/base64"
-
 // AesEncrypt 对字符串对称加密，输入输出都为base64字符
-func AesEncrypt(origString string, keyBase64 string, en Encoder) (string, error) {
+func AesEncrypt(origString string, keyBase64 string, en EnDeCoder) (string, error) {
 	if origString == "" {
 		return "", nil
 	}
@@ -17,13 +15,13 @@ func AesEncrypt(origString string, keyBase64 string, en Encoder) (string, error)
 		return "", err
 	}
 	if en == nil {
-		en = base64.StdEncoding.EncodeToString
+		en = new(Base64Coder)
 	}
-	return en(encrypted), nil
+	return en.Encode(encrypted), nil
 }
 
 // AesDecrypt 对字符串对称解密，输入输出都为base64字符
-func AesDecrypt(encodeString string, keyBase64 string, de Decoder) (string, error) {
+func AesDecrypt(encodeString string, keyBase64 string, de EnDeCoder) (string, error) {
 	if encodeString == "" {
 		return "", nil
 	}
@@ -31,9 +29,9 @@ func AesDecrypt(encodeString string, keyBase64 string, de Decoder) (string, erro
 	iv := ""
 
 	if de == nil {
-		de = base64.StdEncoding.DecodeString
+		de = new(Base64Coder)
 	}
-	encodeByte, err := de(encodeString)
+	encodeByte, err := de.Decode(encodeString)
 	if err != nil {
 		return "", err
 	}
