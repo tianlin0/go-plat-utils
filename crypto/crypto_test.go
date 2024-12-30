@@ -1,6 +1,7 @@
 package crypto_test
 
 import (
+	"encoding/base64"
 	"fmt"
 	"github.com/tianlin0/go-plat-utils/crypto"
 	"github.com/tianlin0/go-plat-utils/utils"
@@ -10,16 +11,24 @@ import (
 func TestAesCbc(t *testing.T) {
 	key := "jasonsjiang29121"
 	testCases := []*utils.TestStruct{
+		{"base64.StdEncoding.EncodeToString 与 base64.URLEncoding.EncodeToString", []any{[]byte("dsfsfsfdf")}, []any{true}, func(originByte []byte) bool {
+			a1 := base64.StdEncoding.EncodeToString(originByte)
+			a2 := base64.URLEncoding.EncodeToString(originByte)
+
+			fmt.Println(a1, a2)
+
+			return a1 == a2
+		}},
 		{"空字符串", []any{""}, []any{"d41d8cd98f00b204e9800998ecf8427e"}, crypto.Md5},
 		{"字符串", []any{"test"}, []any{"098f6bcd4621d373cade4e832627b4f6"}, crypto.Md5},
 		{"带空格的字符串", []any{"hello world"}, []any{"5eb63bbbe01eeed093cb22bb8f5acdc3"}, crypto.Md5},
 		{"CBCEncrypt", []any{"tianlin0"}, []any{true}, func(input string) bool {
 			//每次都会不一样
-			enStr, err := crypto.CBCEncrypt(input, key)
+			enStr, err := crypto.CBCEncrypt(input, key, nil)
 			if err != nil {
 				return false
 			}
-			oldStr, err := crypto.CBCDecrypt(enStr, key)
+			oldStr, err := crypto.CBCDecrypt(enStr, key, nil)
 			if err != nil {
 				return false
 			}
@@ -28,30 +37,15 @@ func TestAesCbc(t *testing.T) {
 			}
 			return false
 		}},
-		{"AESEncrypt", []any{"tianlin0"}, []any{true}, func(input string) bool {
+		{"AesEncrypt", []any{"tianlin0"}, []any{true}, func(input string) bool {
 
 			appSecret := "IgkibX71IEf382PT"
 
-			enStr, err := crypto.AESEncrypt(input, []byte(appSecret), appSecret)
+			enStr, err := crypto.AesEncrypt(input, appSecret, nil)
 			if err != nil {
 				return false
 			}
-			oldStr, err := crypto.AESDecrypt(enStr, []byte(appSecret), appSecret)
-			if err != nil {
-				return false
-			}
-			if oldStr == input {
-				return true
-			}
-			return false
-		}},
-		{"AesEncryptBase64", []any{"tianlin0"}, []any{true}, func(input string) bool {
-			//每次都会不一样
-			enStr, err := crypto.AesEncryptBase64(input, key)
-			if err != nil {
-				return false
-			}
-			oldStr, err := crypto.AesDecryptBase64(enStr, key)
+			oldStr, err := crypto.AesDecrypt(enStr, appSecret, nil)
 			if err != nil {
 				return false
 			}
@@ -92,14 +86,14 @@ func TestAesCbc(t *testing.T) {
 		}},
 		{"GobEncode", []any{"tianlin0"}, []any{"tianlin0"}, func(input string) string {
 			//每次都会不一样
-			enStr, err := crypto.GobEncode(input)
+			enStr, err := crypto.GobEncode(input, nil)
 			if err != nil {
 				return ""
 			}
 			fmt.Println("GobEncode:", input, enStr)
 
 			aa := ""
-			err = crypto.GobDecode(enStr, &aa)
+			err = crypto.GobDecode(enStr, &aa, nil)
 			if err != nil {
 				return ""
 			}
@@ -108,11 +102,13 @@ func TestAesCbc(t *testing.T) {
 		}},
 		{"XorEncode", []any{"tianlin0"}, []any{"tianlin0"}, func(input string) string {
 			keyInt := 5
-			enStr := crypto.XorEncode(input, keyInt)
+			enStr := crypto.XorEncode(input, keyInt, nil)
 
 			fmt.Println("XorEncode:", input, enStr)
 
-			return crypto.XorDecode(enStr, keyInt)
+			deStr, _ := crypto.XorDecode(enStr, keyInt, nil)
+
+			return deStr
 		}},
 	}
 	utils.TestFunction(t, testCases, nil)
@@ -141,15 +137,15 @@ caBV3Wq3YILSjJOFyIdgCti3FmOH9wIgMT5Fzig0Qsp47jwJ0ICRZCaXFYA0XKPI
 TjWDiQ4P6p8=
 -----END PRIVATE KEY-----`
 	rsa.SetPublicAndPrivateKey(pubStr, priStr)
-	kk, err := rsa.PubKeyEncryptBase64("tiantian")
+	kk, err := rsa.PubKeyEncrypt("tiantian", nil)
 	fmt.Println(kk, err)
 
-	mm, err := rsa.PriKeyDecryptBase64(kk)
+	mm, err := rsa.PriKeyDecrypt(kk, nil)
 	fmt.Println(mm, err)
 
-	nn, err := rsa.SignMd5("abc")
+	nn, err := rsa.SignMd5("abc", nil)
 	fmt.Println(nn, err)
-	err = rsa.VerifySignMd5("abc", nn)
+	err = rsa.VerifySignMd5("abc", nn, nil)
 	fmt.Println(err)
 
 	qq, err := crypto.EncryptRSA(priStr, "tiantian")

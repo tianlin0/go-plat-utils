@@ -1,5 +1,7 @@
 package crypto
 
+import "encoding/base64"
+
 // EncryptRSA RSA加密数据，key必须是成对出现
 func EncryptRSA(oneKeyStr string, message string) (string, error) {
 	rsa := new(RSASecurity)
@@ -9,9 +11,9 @@ func EncryptRSA(oneKeyStr string, message string) (string, error) {
 		if err != nil {
 			return "", err
 		}
-		return rsa.PriKeyEncryptBase64(message)
+		return rsa.PriKeyEncrypt(message, base64.StdEncoding.EncodeToString)
 	}
-	return rsa.PubKeyEncryptBase64(message)
+	return rsa.PubKeyEncrypt(message, base64.StdEncoding.EncodeToString)
 }
 
 // DecryptRSA RSA解密数据，key必须是成对出现
@@ -23,7 +25,7 @@ func DecryptRSA(otherKeyStr string, cipherText string) (string, error) {
 		if err != nil {
 			return "", err
 		}
-		return rsa.PubKeyDecryptBase64(cipherText)
+		return rsa.PubKeyDecrypt(cipherText, base64.StdEncoding.DecodeString)
 	}
-	return rsa.PriKeyDecryptBase64(cipherText)
+	return rsa.PriKeyDecrypt(cipherText, base64.StdEncoding.DecodeString)
 }

@@ -1,44 +1,46 @@
 package crypto
 
-import (
-	"crypto/aes"
-	"crypto/cipher"
-	"encoding/base64"
-)
+import "encoding/base64"
 
-// AESEncrypt aes
-func AESEncrypt(encryptStr string, key []byte, iv string) (string, error) {
-	encryptBytes := []byte(encryptStr)
-	block, err := aes.NewCipher(key)
+// AesEncrypt 对字符串对称加密，输入输出都为base64字符
+func AesEncrypt(origString string, keyBase64 string, en Encoder) (string, error) {
+	if origString == "" {
+		return "", nil
+	}
+	origData := []byte(origString)
+
+	key := getAesKeyFromBase64(keyBase64)
+	iv := ""
+
+	encrypted, err := aesEncrypt(origData, key, iv)
 	if err != nil {
 		return "", err
 	}
-
-	blockSize := block.BlockSize()
-	encryptBytes = pKCS5Padding(encryptBytes, blockSize)
-
-	blockMode := cipher.NewCBCEncrypter(block, []byte(iv))
-	encrypted := make([]byte, len(encryptBytes))
-	blockMode.CryptBlocks(encrypted, encryptBytes)
-	return base64.URLEncoding.EncodeToString(encrypted), nil
+	if en == nil {
+		en = base64.StdEncoding.EncodeToString
+	}
+	return en(encrypted), nil
 }
 
-// AESDecrypt aes
-func AESDecrypt(decryptStr string, key []byte, iv string) (string, error) {
-	decryptBytes, err := base64.URLEncoding.DecodeString(decryptStr)
+// AesDecrypt 对字符串对称解密，输入输出都为base64字符
+func AesDecrypt(encodeString string, keyBase64 string, de Decoder) (string, error) {
+	if encodeString == "" {
+		return "", nil
+	}
+	key := getAesKeyFromBase64(keyBase64)
+	iv := ""
+
+	if de == nil {
+		de = base64.StdEncoding.DecodeString
+	}
+	encodeByte, err := de(encodeString)
 	if err != nil {
 		return "", err
 	}
 
-	block, err := aes.NewCipher(key)
+	decodeByte, err := aesDecrypt(encodeByte, key, iv)
 	if err != nil {
 		return "", err
 	}
-
-	blockMode := cipher.NewCBCDecrypter(block, []byte(iv))
-	decrypted := make([]byte, len(decryptBytes))
-
-	blockMode.CryptBlocks(decrypted, decryptBytes)
-	decrypted = pKCS5UnPadding(decrypted)
-	return string(decrypted), nil
+	return string(decodeByte), nil
 }

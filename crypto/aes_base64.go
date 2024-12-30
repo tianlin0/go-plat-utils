@@ -22,28 +22,42 @@ func pKCS5UnPadding(origData []byte) []byte {
 	return origData[:(length - unPadding)]
 }
 
-func aesEncrypt(origData, key []byte) ([]byte, error) {
+func aesEncrypt(origData, key []byte, iv string) ([]byte, error) {
 	block, err := aes.NewCipher(key)
 	if err != nil {
 		return nil, err
 	}
-
 	blockSize := block.BlockSize()
 	origData = pKCS5Padding(origData, blockSize)
-	blockMode := cipher.NewCBCEncrypter(block, key[:blockSize])
+
+	var ivBytes []byte
+	if iv == "" {
+		ivBytes = key[:blockSize]
+	} else {
+		ivBytes = []byte(iv)
+	}
+
+	blockMode := cipher.NewCBCEncrypter(block, ivBytes)
 	crypt := make([]byte, len(origData))
 	blockMode.CryptBlocks(crypt, origData)
 	return crypt, nil
 }
 
-func aesDecrypt(crypt, key []byte) ([]byte, error) {
+func aesDecrypt(crypt, key []byte, iv string) ([]byte, error) {
 	block, err := aes.NewCipher(key)
 	if err != nil {
 		return nil, err
 	}
-	blockSize := block.BlockSize()
-	blockMode := cipher.NewCBCDecrypter(block, key[:blockSize])
+	var ivBytes []byte
+	if iv == "" {
+		blockSize := block.BlockSize()
+		ivBytes = key[:blockSize]
+	} else {
+		ivBytes = []byte(iv)
+	}
+	blockMode := cipher.NewCBCDecrypter(block, ivBytes)
 	origData := make([]byte, len(crypt))
+
 	blockMode.CryptBlocks(origData, crypt)
 	origData = pKCS5UnPadding(origData)
 	return origData, nil
@@ -62,38 +76,4 @@ func getAesKeyFromBase64(keyBase64 string) []byte {
 		key = []byte(newKey)
 	}
 	return key
-}
-
-// AesEncryptBase64 对字符串对称加密，输入输出都为base64字符
-func AesEncryptBase64(origString string, keyBase64 string) (retBase64 string, err error) {
-	if origString == "" {
-		return "", nil
-	}
-	origData := []byte(origString)
-
-	encode, err := aesEncrypt(origData, getAesKeyFromBase64(keyBase64))
-	if err != nil {
-		return "", err
-	}
-
-	return base64.StdEncoding.EncodeToString(encode), nil
-}
-
-// AesDecryptBase64 对字符串对称解密，输入输出都为base64字符
-func AesDecryptBase64(encodeBase64 string, keyBase64 string) (string, error) {
-	if encodeBase64 == "" {
-		return "", nil
-	}
-
-	encodeByte, err := base64.StdEncoding.DecodeString(encodeBase64)
-	if err != nil {
-		return "", err
-	}
-
-	decodeByte, err := aesDecrypt(encodeByte, getAesKeyFromBase64(keyBase64))
-	if err != nil {
-		return "", err
-	}
-
-	return string(decodeByte), nil
 }

@@ -8,6 +8,7 @@ import (
 
 type Config struct {
 	DefaultLogger ILogger
+	LoggerCtxName string //logger在context里的名字
 	LogLevel      LogLevel
 }
 

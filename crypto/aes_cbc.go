@@ -31,51 +31,9 @@ func getAllKeyString(key string) string {
 	return "abcdefghijklmnop" //默认的key
 }
 
-// CBCDecrypt 解密
-// decryptOri decrypt cypher text by key
-func CBCDecrypt(cipherStr string, key string) (string, error) {
-	var ciphertext []byte
-	var err error
-
-	key = getAllKeyString(key)
-	keyByte := []byte(key)
-
-	goroutines.GoSync(func(params ...interface{}) {
-		var block cipher.Block
-		ciphertext, err = hex.DecodeString(cipherStr)
-		if err != nil {
-			return
-		}
-
-		block, err = aes.NewCipher(keyByte)
-		if err != nil {
-			return
-		}
-
-		// The IV needs to be unique, but not secure. Therefore it's common to
-		// include it at the beginning of the ciphertext.
-		if len(ciphertext) < aes.BlockSize {
-			err = fmt.Errorf("ciphertext too short")
-			return
-		}
-		iv := ciphertext[:aes.BlockSize]
-		ciphertext = ciphertext[aes.BlockSize:]
-
-		stream := cipher.NewCBCDecrypter(block, iv)
-
-		// XORKeyStream can work in-place if the two arguments are the same.
-		stream.CryptBlocks(ciphertext, ciphertext)
-	})
-
-	if err != nil {
-		return "", err
-	}
-	return string(bytes.TrimRight(ciphertext, string([]byte{0}))), nil
-}
-
 // CBCEncrypt 加密
 // encryptOri encrypt plain text by key
-func CBCEncrypt(plainStr string, key string) (string, error) {
+func CBCEncrypt(plainStr string, key string, en Encoder) (string, error) {
 	var ciphertext []byte
 	var err error
 
@@ -111,5 +69,56 @@ func CBCEncrypt(plainStr string, key string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return hex.EncodeToString(ciphertext), nil
+
+	if en == nil {
+		en = hex.EncodeToString
+	}
+
+	return en(ciphertext), nil
+}
+
+// CBCDecrypt 解密
+// decryptOri decrypt cypher text by key
+func CBCDecrypt(cipherStr string, key string, de Decoder) (string, error) {
+	var ciphertext []byte
+	var err error
+
+	key = getAllKeyString(key)
+	keyByte := []byte(key)
+
+	goroutines.GoSync(func(params ...interface{}) {
+		var block cipher.Block
+
+		if de == nil {
+			de = hex.DecodeString
+		}
+
+		ciphertext, err = de(cipherStr)
+		if err != nil {
+			return
+		}
+
+		block, err = aes.NewCipher(keyByte)
+		if err != nil {
+			return
+		}
+		// The IV needs to be unique, but not secure. Therefore it's common to
+		// include it at the beginning of the ciphertext.
+		if len(ciphertext) < aes.BlockSize {
+			err = fmt.Errorf("ciphertext too short")
+			return
+		}
+		iv := ciphertext[:aes.BlockSize]
+		ciphertext = ciphertext[aes.BlockSize:]
+
+		stream := cipher.NewCBCDecrypter(block, iv)
+
+		// XORKeyStream can work in-place if the two arguments are the same.
+		stream.CryptBlocks(ciphertext, ciphertext)
+	})
+
+	if err != nil {
+		return "", err
+	}
+	return string(bytes.TrimRight(ciphertext, string([]byte{0}))), nil
 }

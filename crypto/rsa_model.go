@@ -124,8 +124,8 @@ func (r *RSASecurity) getPrivateKey() (*rsa.PrivateKey, error) {
 	return getPriKey([]byte(r.priStr))
 }
 
-// PubKeyEncrypt 公钥加密
-func (r *RSASecurity) PubKeyEncrypt(input []byte) ([]byte, error) {
+// PubKeyEncryptByte 公钥加密
+func (r *RSASecurity) PubKeyEncryptByte(input []byte) ([]byte, error) {
 	if r.pubKey == nil {
 		return []byte(""), fmt.Errorf(`Please set the public key in advance`)
 	}
@@ -137,8 +137,8 @@ func (r *RSASecurity) PubKeyEncrypt(input []byte) ([]byte, error) {
 	return io.ReadAll(output)
 }
 
-// PriKeyDecrypt 私钥解密
-func (r *RSASecurity) PriKeyDecrypt(input []byte) ([]byte, error) {
+// PriKeyDecryptByte 私钥解密
+func (r *RSASecurity) PriKeyDecryptByte(input []byte) ([]byte, error) {
 	if r.priKey == nil {
 		return []byte(""), fmt.Errorf(`Please set the private key in advance`)
 	}
@@ -151,30 +151,36 @@ func (r *RSASecurity) PriKeyDecrypt(input []byte) ([]byte, error) {
 	return io.ReadAll(output)
 }
 
-// PubKeyEncryptBase64 公钥加密
-func (r *RSASecurity) PubKeyEncryptBase64(input string) (string, error) {
-	oldByte, err := r.PubKeyEncrypt([]byte(input))
+// PubKeyEncrypt 公钥加密
+func (r *RSASecurity) PubKeyEncrypt(input string, en Encoder) (string, error) {
+	oldByte, err := r.PubKeyEncryptByte([]byte(input))
 	if err != nil {
 		return "", err
 	}
-	return base64.StdEncoding.EncodeToString(oldByte), nil
+	if en == nil {
+		en = base64.StdEncoding.EncodeToString
+	}
+	return en(oldByte), nil
 }
 
-// PriKeyDecryptBase64 私钥解密
-func (r *RSASecurity) PriKeyDecryptBase64(encodeBase64String string) (string, error) {
-	newByte, err := base64.StdEncoding.DecodeString(encodeBase64String)
+// PriKeyDecrypt 私钥解密
+func (r *RSASecurity) PriKeyDecrypt(encodeBase64String string, de Decoder) (string, error) {
+	if de == nil {
+		de = base64.StdEncoding.DecodeString
+	}
+	newByte, err := de(encodeBase64String)
 	if err != nil {
 		return "", err
 	}
-	newStr, err := r.PriKeyDecrypt(newByte)
+	newStr, err := r.PriKeyDecryptByte(newByte)
 	if err != nil {
 		return "", err
 	}
 	return string(newStr), nil
 }
 
-// PriKeyEncrypt 私钥加密，用于数字签名
-func (r *RSASecurity) PriKeyEncrypt(input []byte) ([]byte, error) {
+// PriKeyEncryptByte 私钥加密，用于数字签名
+func (r *RSASecurity) PriKeyEncryptByte(input []byte) ([]byte, error) {
 	if r.priKey == nil {
 		return []byte(""), fmt.Errorf(`Please set the private key in advance`)
 	}
@@ -186,8 +192,8 @@ func (r *RSASecurity) PriKeyEncrypt(input []byte) ([]byte, error) {
 	return io.ReadAll(output)
 }
 
-// PubKeyDecrypt 公钥解密，用于数字签名
-func (r *RSASecurity) PubKeyDecrypt(input []byte) ([]byte, error) {
+// PubKeyDecryptByte 公钥解密，用于数字签名
+func (r *RSASecurity) PubKeyDecryptByte(input []byte) ([]byte, error) {
 	if r.pubKey == nil {
 		return []byte(""), fmt.Errorf(`Please set the public key in advance`)
 	}
@@ -199,22 +205,28 @@ func (r *RSASecurity) PubKeyDecrypt(input []byte) ([]byte, error) {
 	return io.ReadAll(output)
 }
 
-// PriKeyEncryptBase64 私钥加密
-func (r *RSASecurity) PriKeyEncryptBase64(input string) (string, error) {
-	oldByte, err := r.PriKeyEncrypt([]byte(input))
+// PriKeyEncrypt 私钥加密
+func (r *RSASecurity) PriKeyEncrypt(input string, en Encoder) (string, error) {
+	oldByte, err := r.PriKeyEncryptByte([]byte(input))
 	if err != nil {
 		return "", err
 	}
-	return base64.StdEncoding.EncodeToString(oldByte), nil
+	if en == nil {
+		en = base64.StdEncoding.EncodeToString
+	}
+	return en(oldByte), nil
 }
 
-// PubKeyDecryptBase64 公钥解密
-func (r *RSASecurity) PubKeyDecryptBase64(encodeBase64String string) (string, error) {
-	newByte, err := base64.StdEncoding.DecodeString(encodeBase64String)
+// PubKeyDecrypt 公钥解密
+func (r *RSASecurity) PubKeyDecrypt(encodeBase64String string, de Decoder) (string, error) {
+	if de == nil {
+		de = base64.StdEncoding.DecodeString
+	}
+	newByte, err := de(encodeBase64String)
 	if err != nil {
 		return "", err
 	}
-	newStr, err := r.PubKeyDecrypt(newByte)
+	newStr, err := r.PubKeyDecryptByte(newByte)
 	if err != nil {
 		return "", err
 	}
@@ -222,44 +234,56 @@ func (r *RSASecurity) PubKeyDecryptBase64(encodeBase64String string) (string, er
 }
 
 // SignMd5 使用RSAWithMD5算法签名
-func (r *RSASecurity) SignMd5(data string) (string, error) {
+func (r *RSASecurity) SignMd5(data string, en Encoder) (string, error) {
 	md5Hash := md5.New()
 	sData := []byte(data)
 	md5Hash.Write(sData)
 	hashed := md5Hash.Sum(nil)
 
 	signByte, err := rsa.SignPKCS1v15(rand.Reader, r.priKey, crypto.MD5, hashed)
-	sign := base64.StdEncoding.EncodeToString(signByte)
-	return string(sign), err
+
+	if en == nil {
+		en = base64.StdEncoding.EncodeToString
+	}
+
+	return en(signByte), err
 }
 
 // SignSha1 使用RSAWithSHA1算法签名
-func (r *RSASecurity) SignSha1(data string) (string, error) {
+func (r *RSASecurity) SignSha1(data string, en Encoder) (string, error) {
 	sha1Hash := sha1.New()
 	sData := []byte(data)
 	sha1Hash.Write(sData)
 	hashed := sha1Hash.Sum(nil)
 
 	signByte, err := rsa.SignPKCS1v15(rand.Reader, r.priKey, crypto.SHA1, hashed)
-	sign := base64.StdEncoding.EncodeToString(signByte)
-	return string(sign), err
+
+	if en == nil {
+		en = base64.StdEncoding.EncodeToString
+	}
+	return en(signByte), err
 }
 
 // SignSha256 使用RSAWithSHA256算法签名
-func (r *RSASecurity) SignSha256(data string) (string, error) {
+func (r *RSASecurity) SignSha256(data string, en Encoder) (string, error) {
 	sha256Hash := sha256.New()
 	sData := []byte(data)
 	sha256Hash.Write(sData)
 	hashed := sha256Hash.Sum(nil)
 
 	signByte, err := rsa.SignPKCS1v15(rand.Reader, r.priKey, crypto.SHA256, hashed)
-	sign := base64.StdEncoding.EncodeToString(signByte)
-	return string(sign), err
+	if en == nil {
+		en = base64.StdEncoding.EncodeToString
+	}
+	return en(signByte), err
 }
 
 // VerifySignMd5 使用RSAWithMD5验证签名
-func (r *RSASecurity) VerifySignMd5(data string, signData string) error {
-	sign, err := base64.StdEncoding.DecodeString(signData)
+func (r *RSASecurity) VerifySignMd5(data string, signData string, de Decoder) error {
+	if de == nil {
+		de = base64.StdEncoding.DecodeString
+	}
+	sign, err := de(signData)
 	if err != nil {
 		return err
 	}
@@ -269,8 +293,11 @@ func (r *RSASecurity) VerifySignMd5(data string, signData string) error {
 }
 
 // VerifySignSha1 使用RSAWithSHA1验证签名
-func (r *RSASecurity) VerifySignSha1(data string, signData string) error {
-	sign, err := base64.StdEncoding.DecodeString(signData)
+func (r *RSASecurity) VerifySignSha1(data string, signData string, de Decoder) error {
+	if de == nil {
+		de = base64.StdEncoding.DecodeString
+	}
+	sign, err := de(signData)
 	if err != nil {
 		return err
 	}
@@ -280,8 +307,12 @@ func (r *RSASecurity) VerifySignSha1(data string, signData string) error {
 }
 
 // VerifySignSha256 使用RSAWithSHA256验证签名
-func (r *RSASecurity) VerifySignSha256(data string, signData string) error {
-	sign, err := base64.StdEncoding.DecodeString(signData)
+func (r *RSASecurity) VerifySignSha256(data string, signData string, de Decoder) error {
+	if de == nil {
+		de = base64.StdEncoding.DecodeString
+	}
+
+	sign, err := de(signData)
 	if err != nil {
 		return err
 	}
