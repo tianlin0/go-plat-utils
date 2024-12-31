@@ -13,7 +13,9 @@ type Config struct {
 }
 
 var (
-	defaultConfig = &Config{}
+	defaultConfig = &Config{
+		LoggerCtxName: "context_logger_name",
+	}
 )
 
 // SetConfig 设置默认日志，不能包含ctx，不然全局唯一会有问题
@@ -48,6 +50,10 @@ func DefaultLogger() ILogger {
 func CtxLogger(ctx context.Context) ILogger {
 	if ctx != nil {
 		goroutines.SetContext(&ctx)
+		cLogger := getCtxLoggerFromContext(ctx)
+		if cLogger != nil {
+			return cLogger
+		}
 	}
 	return DefaultLogger()
 }
