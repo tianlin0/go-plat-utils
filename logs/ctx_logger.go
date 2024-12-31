@@ -31,6 +31,20 @@ func NewCtxLogger(ctx context.Context, level LogLevel, logFunc LogExecute, logCo
 	return cLogger, newCtx
 }
 
+// SetCallerSkip 设置文件忽略
+func (x *ctxLogger) SetCallerSkip(skip int) *ctxLogger {
+	x.callerSkip = skip
+	return x
+}
+
+// WithLogExecute 自定义方法
+func (x *ctxLogger) WithLogExecute(logExec LogExecute) *ctxLogger {
+	if logExec != nil {
+		x.logExecute = logExec
+	}
+	return x
+}
+
 // Debug Debug
 func (x *ctxLogger) Debug(v ...interface{}) {
 	if x.Level() > DEBUG {
