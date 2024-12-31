@@ -136,7 +136,7 @@ func (p *genRequest) Submit(ctx context.Context) *Response {
 	}
 
 	simpleCurlStrData := resp.getLoggerResponse(startTime)
-	if p.defaultPrintLogInt >= 0 {
+	if p.defaultPrintLogInt == PrintOne || p.defaultPrintLogInt == PrintAll {
 		simpleCurlStrData.printLoggerResponse(ctx, p.logger)
 	}
 

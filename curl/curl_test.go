@@ -16,7 +16,7 @@ func TestCurls(t *testing.T) {
 			"aaaa": 1,
 		},
 		Method: "GET",
-	}).SetDefaultPrintInt(-1).Submit(nil)
+	}).SetDefaultPrintType(curl.PrintNone).Submit(nil)
 }
 
 func TestSubmitDemo(t *testing.T) {

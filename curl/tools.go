@@ -116,7 +116,7 @@ func printLog(ctx context.Context, loggers logs.ILogger, printLogInt int, logStr
 		return
 	}
 	// 默认的打印日志
-	if printLogInt > 0 {
+	if printLogInt == PrintAll {
 		if ctx != nil {
 			logs.CtxLogger(ctx).Debug(logStr)
 		} else {

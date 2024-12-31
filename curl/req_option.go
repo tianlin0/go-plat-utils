@@ -8,9 +8,17 @@ import (
 	"time"
 )
 
-// SetDefaultPrintInt 0只会默认打一条，1全打，-1不打
-func (r *genRequest) SetDefaultPrintInt(b int) *genRequest {
-	r.defaultPrintLogInt = b
+const (
+	PrintOne = iota
+	PrintAll
+	PrintNone
+)
+
+// SetDefaultPrintType PrintOne只会默认打一条，PrintAll全打，PrintNone不打
+func (r *genRequest) SetDefaultPrintType(b int) *genRequest {
+	if b == PrintOne || b == PrintNone || b == PrintAll {
+		r.defaultPrintLogInt = b
+	}
 	return r
 }
 func (r *genRequest) SetHttpTransport(t *http.Transport) *genRequest {
