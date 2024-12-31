@@ -167,5 +167,6 @@ func AesCbcDecrypt(cipherStr string, key string, de EnDeCoder) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return cipher.AESDecrypt(hex.EncodeToString(cipherTextTemp))
+	originStr := hex.EncodeToString(cipherTextTemp)
+	return cipher.AESDecrypt(originStr)
 }
