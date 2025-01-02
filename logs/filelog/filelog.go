@@ -114,5 +114,5 @@ func getLogLevel(l logrus.Level) logs.LogLevel {
 			return key
 		}
 	}
-	return logs.DEBUG
+	return logs.GetConfig().LogLevel
 }

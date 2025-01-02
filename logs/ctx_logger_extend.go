@@ -42,7 +42,7 @@ func getOneLogger(ctx context.Context) *ctxLogger {
 	}
 	cLogger := new(ctxLogger)
 	cLogger.buildLogger(ctx, &ctxLogger{
-		logLevel: defaultConfig.LogLevel,
+		logLevel: GetConfig().LogLevel,
 	})
 	return cLogger //默认使用新的
 }
@@ -52,7 +52,7 @@ func getCtxLoggerFromContext(ctx context.Context) *ctxLogger {
 	if ctx == nil {
 		return nil
 	}
-	if logInfoTemp := ctx.Value(defaultConfig.LoggerCtxName); logInfoTemp != nil {
+	if logInfoTemp := ctx.Value(GetConfig().LoggerCtxName); logInfoTemp != nil {
 		if logInstance, ok := logInfoTemp.(*ctxLogger); ok {
 			return logInstance
 		}
@@ -68,7 +68,7 @@ func setLoggerToContext(ctx context.Context, logger *ctxLogger) context.Context 
 		//直接拿原始的
 		logger = getOneLogger(ctx)
 	}
-	newCtx := context.WithValue(ctx, defaultConfig.LoggerCtxName, logger)
+	newCtx := context.WithValue(ctx, GetConfig().LoggerCtxName, logger)
 	logger.ctx = &newCtx
 	goroutines.SetContext(&newCtx)
 	return newCtx
