@@ -33,11 +33,11 @@ func (w *group) add(index int) {
 	w.mutex.Unlock()
 
 	if index > 0 {
-		go func(w *group, index int) {
+		GoAsync(func(params ...any) {
 			for i := 0; i < index; i++ {
 				w.gc <- true
 			}
-		}(w, index)
+		})
 	} else if index < 0 {
 		for i := index; i < 0; i++ {
 			<-w.gc

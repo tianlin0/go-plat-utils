@@ -4,6 +4,7 @@ package retry
 import (
 	"context"
 	"fmt"
+	"github.com/tianlin0/go-plat-utils/goroutines"
 	"reflect"
 	"time"
 )
@@ -16,10 +17,12 @@ type retry struct {
 
 type Executable func(context.Context) (interface{}, error)
 
-/*ErrCallbackFunc 回调函数
-  nowAttemptCount 当前尝试次数
-  remainCount 剩余次数
-  err 错误
+/*
+ErrCallbackFunc 回调函数
+
+	nowAttemptCount 当前尝试次数
+	remainCount 剩余次数
+	err 错误
 */
 type ErrCallbackFunc func(err error) error
 
@@ -107,14 +110,14 @@ func (r *retry) doRetryWithCtx(parentCtx context.Context, fn Executable) (interf
 	success := make(chan interface{}, 1)
 
 	for {
-		go func() {
+		goroutines.GoAsync(func(params ...any) {
 			val, err := fn(ctx)
 			if err != nil {
 				fail <- err
 				return
 			}
 			success <- val
-		}()
+		})
 
 		select {
 		//
