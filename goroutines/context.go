@@ -2,6 +2,7 @@ package goroutines
 
 import (
 	"context"
+	"fmt"
 	gocache "github.com/patrickmn/go-cache"
 	"github.com/timandy/routine"
 	"strconv"
@@ -24,6 +25,7 @@ func getCache() *gocache.Cache {
 		onceCache.Do(func() {
 			ctxCache = gocache.New(expiration, cleanupInterval)
 			localStorage = routine.NewInheritableThreadLocal[string]()
+			localStorage.Set(getCurrentGoId()) //初始化
 		})
 	}
 	return ctxCache
@@ -34,35 +36,48 @@ func getCurrentGoId() string {
 	return strconv.FormatInt(routine.Goid(), baseInt)
 }
 
-// SetContext 设置上下文，需要在入口协程上执行，会返回当前的IdKey
+// InitContext 设置上下文，需要在入口协程上执行，会返回当前的IdKey
+func InitContext(ctx *context.Context) {
+	ctxFactory := getCache()
+
+	ctxKey := getCurrentGoId()
+	localStorage.Set(ctxKey)
+	if ctx != nil {
+		ctxFactory.Set(ctxKey, ctx, expiration)
+	}
+}
+
+// SetContext 设置上下文
 func SetContext(ctx *context.Context) {
-	_, ctxKey := GetContext()
+	_, ctxKey, _ := GetContext()
 	if ctxKey == "" {
-		ctxKey = getCurrentGoId()
+		ctxKey = getCurrentGoId() //会取到子协程的ID，所以这里会有问题
 	}
 	ctxFactory := getCache()
-	ctxFactory.Set(ctxKey, ctx, gocache.DefaultExpiration)
-	localStorage.Set(ctxKey)
+	ctxFactory.Set(ctxKey, ctx, expiration)
+	if localStorage.Get() == "" {
+		localStorage.Set(ctxKey)
+	}
 }
 
 // GetContext 获取上下文
-func GetContext() (ctx *context.Context, ctxKey string) {
+func GetContext() (ctx *context.Context, ctxKey string, err error) {
 	ctxFactory := getCache()
 
 	ctxKey = localStorage.Get()
 	if ctxKey == "" {
-		return nil, ""
+		return nil, "", fmt.Errorf("需要入口处调用 InitContext 进行设置。")
 	}
 
 	val, ok := ctxFactory.Get(ctxKey)
 	if !ok {
-		return nil, ctxKey
+		return nil, ctxKey, fmt.Errorf("需要入口处调用 InitContext 进行设置, ctxKey: %s", ctxKey)
 	}
 	ctx, ok = val.(*context.Context)
 	if ok {
-		return ctx, ctxKey
+		return ctx, ctxKey, nil
 	}
-	return nil, ctxKey
+	return nil, ctxKey, fmt.Errorf("需要入口处调用 SetContext 进行设置, 存储格式错误。 ctxKey: %s", ctxKey)
 }
 
 // DelContext 删除上下文
@@ -73,4 +88,5 @@ func DelContext() {
 		return
 	}
 	ctxFactory.Delete(ctxKey)
+	localStorage.Remove()
 }

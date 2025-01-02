@@ -14,18 +14,20 @@ type group struct {
 	mutex sync.Mutex
 }
 
-// waitGroup 新建一个等待实例
-func waitGroup(timeout time.Duration) *group {
-	wg := group{
+// newWaitGroup 新建一个等待实例
+func newWaitGroup(timeout time.Duration) *group {
+	return &group{
 		gc:  make(chan bool),
 		cap: 0,
 		tk:  time.NewTicker(timeout),
 	}
-	return &wg
 }
 
 // add 新增N个协程
 func (w *group) add(index int) {
+	if index == 0 {
+		return
+	}
 	w.mutex.Lock()
 	w.cap = w.cap + index
 	w.mutex.Unlock()

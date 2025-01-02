@@ -22,7 +22,7 @@ func (x *ctxLogger) printlnComm(level LogLevel, msg ...interface{}) {
 	}
 	logNewInfo.AddMessage(level, fileName, line, msg...)
 
-	ctxPtr, _ := goroutines.GetContext()
+	ctxPtr, _, _ := goroutines.GetContext()
 	if ctxPtr == nil {
 		ctxPtr := x.ctx
 		if ctxPtr == nil {
@@ -107,4 +107,9 @@ func (x *ctxLogger) buildLogger(ctx context.Context, logParam *ctxLogger) {
 	if logParam.logCommData != nil {
 		x.logCommData = logParam.logCommData
 	}
+
+	if x.logCommData == nil {
+		x.logCommData = new(LogCommData)
+	}
+	x.logCommData.Init()
 }

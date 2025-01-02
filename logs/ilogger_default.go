@@ -48,12 +48,27 @@ func DefaultLogger() ILogger {
 
 // CtxLogger 获取系统默认的日志
 func CtxLogger(ctx context.Context) ILogger {
+	// 先从ctx里获取是否存在logger
 	if ctx != nil {
-		goroutines.SetContext(&ctx)
 		cLogger := getCtxLoggerFromContext(ctx)
+		if cLogger != nil {
+			goroutines.SetContext(&ctx)
+			return cLogger
+		}
+	}
+
+	// 再从全局保存的context里获取
+	oneCtxPtr, _, _ := goroutines.GetContext()
+	if oneCtxPtr != nil {
+		cLogger := getCtxLoggerFromContext(*oneCtxPtr)
 		if cLogger != nil {
 			return cLogger
 		}
+	}
+	// 再新建一个logger
+	if ctx != nil {
+		cLoggerNew, _ := NewCtxLogger(ctx, INFO, nil)
+		return cLoggerNew
 	}
 	return DefaultLogger()
 }

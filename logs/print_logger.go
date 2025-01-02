@@ -89,7 +89,7 @@ func (x *printLogger) printlnComm(level LogLevel, msg ...interface{}) {
 	}
 	logNewInfo.AddMessage(level, fileName, line, msg...)
 
-	ctxPtr, _ := goroutines.GetContext()
+	ctxPtr, _, _ := goroutines.GetContext()
 	if ctxPtr == nil {
 		ctx := context.Background()
 		ctxPtr = &ctx

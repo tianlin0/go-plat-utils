@@ -23,7 +23,7 @@ type genRequest struct {
 	logger             logs.ILogger
 	handler            InjectHandler
 	ctx                context.Context
-	cacheInstance      cache.CommCache
+	cacheInstance      cache.CommCache[string]
 }
 
 func (p *genRequest) buildGenRequest() {
@@ -99,7 +99,7 @@ func (p *genRequest) Submit(ctx context.Context) *Response {
 
 	startTime := time.Now()
 	if p.Cache > 0 {
-		respTxt := getDataFromCache(p)
+		respTxt := getDataFromCache(ctx, p)
 		if respTxt != "" {
 			resp.Response = respTxt
 			resp.fromCache = true
@@ -144,7 +144,7 @@ func (p *genRequest) Submit(ctx context.Context) *Response {
 		allResp.Error == nil &&
 		allResp.Response != "" &&
 		p.Cache > 0 {
-		setDataToCache(p, allResp, p.Cache)
+		setDataToCache(ctx, p, allResp, p.Cache)
 	}
 
 	return allResp

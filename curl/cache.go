@@ -1,6 +1,7 @@
 package curl
 
 import (
+	"context"
 	jsoniter "github.com/json-iterator/go"
 	"github.com/tianlin0/go-plat-utils/cache"
 	"github.com/tianlin0/go-plat-utils/conv"
@@ -18,13 +19,13 @@ type responseCacheStruct struct {
 	Response string    `json:"response"`
 }
 
-func getDataFromCache(p *genRequest) string {
+func getDataFromCache(ctx context.Context, p *genRequest) string {
 	if p.Cache == 0 || p.cacheInstance == nil {
 		return ""
 	}
 	cacheId := getRequestId(p.getRequest())
 
-	retData, err := cache.NsGet(p.cacheInstance, ns, cacheId)
+	retData, err := cache.NsGet[string](ctx, p.cacheInstance, ns, cacheId)
 	if err != nil || retData == "" {
 		return ""
 	}
@@ -32,12 +33,12 @@ func getDataFromCache(p *genRequest) string {
 	cacheData := new(responseCacheStruct)
 	err = jsoniter.Unmarshal([]byte(retData), cacheData)
 	if err != nil {
-		_, _ = cache.NsDel(p.cacheInstance, ns, cacheId)
+		_, _ = cache.NsDel[string](ctx, p.cacheInstance, ns, cacheId)
 		return ""
 	}
 	//超时
 	if time.Now().Sub(cacheData.Time) > p.Cache {
-		_, _ = cache.NsDel(p.cacheInstance, ns, cacheId)
+		_, _ = cache.NsDel[string](ctx, p.cacheInstance, ns, cacheId)
 		return ""
 	}
 
@@ -56,7 +57,7 @@ func getDataFromCache(p *genRequest) string {
 	return ""
 }
 
-func setDataToCache(g *genRequest, p *Response, cacheTime time.Duration) {
+func setDataToCache(ctx context.Context, g *genRequest, p *Response, cacheTime time.Duration) {
 	if g.Cache == 0 || g.cacheInstance == nil {
 		return
 	}
@@ -72,6 +73,6 @@ func setDataToCache(g *genRequest, p *Response, cacheTime time.Duration) {
 			return
 		}
 
-		_, _ = cache.NsSet(g.cacheInstance, ns, cacheId, cacheStr, cacheTime)
-	}, nil)
+		_, _ = cache.NsSet[string](ctx, g.cacheInstance, ns, cacheId, cacheStr, cacheTime)
+	})
 }

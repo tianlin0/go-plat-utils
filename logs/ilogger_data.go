@@ -37,6 +37,16 @@ type LogData struct {
 	Message  []interface{} `json:"message"`
 }
 
+// Init 初始化
+func (l *LogCommData) Init() {
+	if cond.IsTimeEmpty(l.CreateTime) {
+		l.CreateTime = time.Now()
+	}
+	if l.LogId == "" {
+		l.LogId = httputil.GetLogId()
+	}
+}
+
 // NewLogData 初始化一个日志变量
 func NewLogData(logCommData ...*LogCommData) *LogData {
 	l := new(LogData)
@@ -46,12 +56,8 @@ func NewLogData(logCommData ...*LogCommData) *LogData {
 		}
 	}
 
-	if cond.IsTimeEmpty(l.CreateTime) {
-		l.CreateTime = time.Now()
-	}
-	if l.LogId == "" {
-		l.LogId = httputil.GetLogId()
-	}
+	logData := &l.LogCommData
+	logData.Init()
 
 	return l
 }
@@ -84,8 +90,8 @@ func (l *LogData) String() string {
 		logList = append(logList, l.LogLevel.GetName())
 	}
 
-	if l.LogId != "" {
-		logList = append(logList, l.LogId)
+	if l.LogCommData.LogId != "" {
+		logList = append(logList, l.LogCommData.LogId)
 	}
 
 	if l.Env != "" {
@@ -119,8 +125,10 @@ func (l *LogData) String() string {
 
 	logList = append(logList, fmt.Sprintf("%s", utils.Join(l.Message, " ")))
 
-	minTime := l.Now.Sub(l.CreateTime)
-	logList = append(logList, fmt.Sprintf("[%dms]", minTime.Milliseconds()))
+	minTime := l.Now.Sub(l.CreateTime).Milliseconds()
+	if minTime > 0 {
+		logList = append(logList, fmt.Sprintf("[%dms]", minTime))
+	}
 
 	return utils.Join(logList, " ")
 }

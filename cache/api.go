@@ -1,15 +1,16 @@
 package cache
 
 import (
+	"context"
 	"fmt"
 	"time"
 )
 
 // CommCache 公共缓存接口
-type CommCache interface {
-	Get(key string) (string, error)
-	Set(key, val string, timeout time.Duration) (bool, error)
-	Del(key string) (bool, error)
+type CommCache[V any] interface {
+	Get(ctx context.Context, key string) (V, error)
+	Set(ctx context.Context, key string, val V, timeout time.Duration) (bool, error)
+	Del(ctx context.Context, key string) (bool, error)
 }
 
 // GetNsKey 获取namespace下的key，规范化
@@ -21,16 +22,16 @@ func getNsKey(ns string, key string) string {
 }
 
 // NsGet xxx
-func NsGet(co CommCache, ns string, key string) (string, error) {
-	return co.Get(getNsKey(ns, key))
+func NsGet[V any](ctx context.Context, co CommCache[V], ns string, key string) (V, error) {
+	return co.Get(ctx, getNsKey(ns, key))
 }
 
 // NsSet xxx
-func NsSet(co CommCache, ns string, key, val string, timeout time.Duration) (bool, error) {
-	return co.Set(getNsKey(ns, key), val, timeout)
+func NsSet[V any](ctx context.Context, co CommCache[V], ns string, key string, val V, timeout time.Duration) (bool, error) {
+	return co.Set(ctx, getNsKey(ns, key), val, timeout)
 }
 
 // NsDel xxx
-func NsDel(co CommCache, ns string, key string) (bool, error) {
-	return co.Del(getNsKey(ns, key))
+func NsDel[V any](ctx context.Context, co CommCache[V], ns string, key string) (bool, error) {
+	return co.Del(ctx, getNsKey(ns, key))
 }
