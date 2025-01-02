@@ -42,7 +42,7 @@ func getOneLogger(ctx context.Context) *ctxLogger {
 	}
 	cLogger := new(ctxLogger)
 	cLogger.buildLogger(ctx, &ctxLogger{
-		logLevel: INFO,
+		logLevel: defaultConfig.LogLevel,
 	})
 	return cLogger //默认使用新的
 }

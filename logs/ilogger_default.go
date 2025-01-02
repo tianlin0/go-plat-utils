@@ -15,6 +15,7 @@ type Config struct {
 var (
 	defaultConfig = &Config{
 		LoggerCtxName: "context_logger_name",
+		LogLevel:      INFO,
 	}
 )
 
@@ -67,7 +68,7 @@ func CtxLogger(ctx context.Context) ILogger {
 	}
 	// 再新建一个logger
 	if ctx != nil {
-		cLoggerNew, _ := NewCtxLogger(ctx, INFO, nil)
+		cLoggerNew, _ := NewCtxLogger(ctx, defaultConfig.LogLevel, nil)
 		return cLoggerNew
 	}
 	return DefaultLogger()
