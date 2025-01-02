@@ -19,8 +19,8 @@ var (
 	localStorage    routine.ThreadLocal[string]
 )
 
-// getCache 初始化并获得缓存
-func getCache() *gocache.Cache {
+// getInitCache 初始化并获得缓存
+func getInitCache() *gocache.Cache {
 	if ctxCache == nil {
 		onceCache.Do(func() {
 			ctxCache = gocache.New(expiration, cleanupInterval)
@@ -37,13 +37,12 @@ func getCurrentGoId() string {
 }
 
 // InitContext 设置上下文，需要在入口协程上执行，会返回当前的IdKey
-func InitContext(ctx *context.Context) {
-	ctxFactory := getCache()
-
+func InitContext(ctx ...*context.Context) {
+	ctxFactory := getInitCache()
 	ctxKey := getCurrentGoId()
 	localStorage.Set(ctxKey)
-	if ctx != nil {
-		ctxFactory.Set(ctxKey, ctx, expiration)
+	if len(ctx) > 0 {
+		ctxFactory.Set(ctxKey, ctx[0], expiration)
 	}
 }
 
@@ -53,7 +52,7 @@ func SetContext(ctx *context.Context) {
 	if ctxKey == "" {
 		ctxKey = getCurrentGoId() //会取到子协程的ID，所以这里会有问题
 	}
-	ctxFactory := getCache()
+	ctxFactory := getInitCache()
 	ctxFactory.Set(ctxKey, ctx, expiration)
 	if localStorage.Get() == "" {
 		localStorage.Set(ctxKey)
@@ -62,7 +61,7 @@ func SetContext(ctx *context.Context) {
 
 // GetContext 获取上下文
 func GetContext() (ctx *context.Context, ctxKey string, err error) {
-	ctxFactory := getCache()
+	ctxFactory := getInitCache()
 
 	ctxKey = localStorage.Get()
 	if ctxKey == "" {
@@ -82,7 +81,7 @@ func GetContext() (ctx *context.Context, ctxKey string, err error) {
 
 // DelContext 删除上下文
 func DelContext() {
-	ctxFactory := getCache()
+	ctxFactory := getInitCache()
 	ctxKey := localStorage.Get()
 	if ctxKey == "" {
 		return
