@@ -1,8 +1,9 @@
 package utils
 
 import (
+	"crypto/md5"
+	"encoding/hex"
 	"fmt"
-	"github.com/tianlin0/go-plat-utils/crypto"
 	"math/rand"
 	"strings"
 	"time"
@@ -108,7 +109,10 @@ func NewUUID() string {
 
 // GetUUID 获取uuid格式串
 func GetUUID(s string) string {
-	uuid := crypto.Md5(s)
+	uuid := func(s string) string {
+		d := md5.Sum([]byte(s))
+		return hex.EncodeToString(d[:])
+	}(s)
 	if len(uuid) != 32 {
 		return ""
 	}
