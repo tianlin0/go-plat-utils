@@ -59,7 +59,7 @@ func Ping(host string, port string, timeout time.Duration) error {
 // GetLogId 生成唯一日志id
 func GetLogId() string {
 	logId := utils.NewUUID()
-	randomStr := fmt.Sprintf("%s%s", logId, utils.GetRandomString(12))
+	randomStr := fmt.Sprintf("%s%s", logId, utils.RandomString(12))
 	newLogId := utils.GetUUID(randomStr)
 	logIdFront := newLogId[0:24]
 

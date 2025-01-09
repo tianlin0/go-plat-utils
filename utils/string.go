@@ -3,9 +3,8 @@ package utils
 import (
 	"fmt"
 	"github.com/marspere/goencrypt"
-	"math/rand"
+	"github.com/samber/lo"
 	"strings"
-	"time"
 	"unicode/utf8"
 
 	gguid "github.com/google/uuid"
@@ -13,23 +12,30 @@ import (
 	"github.com/tianlin0/go-plat-utils/internal"
 )
 
-// GetRandomString 生成随机字符串
-func GetRandomString(l int, sourceStr ...string) string {
-	var str = "1234567890qwertyuiopasdfghjklzxcvbnm"
+// RandomString 生成随机字符串
+func RandomString(l int, sourceStr ...string) string {
+	var str = append(lo.NumbersCharset, lo.LowerCaseLettersCharset...)
 	if len(sourceStr) > 0 {
-		sourceArr := make([]string, 0)
+		sourceArr := make([]rune, 0, len(sourceStr))
 		for _, one := range sourceStr {
-			sourceArr = append(sourceArr, one)
+			sourceArr = append(sourceArr, []rune(one)...)
 		}
-		str = strings.Join(sourceArr, "")
+		if len(sourceArr) > 0 {
+			str = sourceArr
+		}
 	}
-	bytes := []byte(str)
-	result := make([]byte, 0)
-	r := rand.New(rand.NewSource(time.Now().UnixNano()))
-	for i := 0; i < l; i++ {
-		result = append(result, bytes[r.Intn(len(bytes))])
+	if l <= 0 {
+		return ""
 	}
-	return string(result)
+	return lo.RandomString(l, str)
+
+	//bytes := []byte(str)
+	//result := make([]byte, 0)
+	//r := rand.New(rand.NewSource(time.Now().UnixNano()))
+	//for i := 0; i < l; i++ {
+	//	result = append(result, bytes[r.Intn(len(bytes))])
+	//}
+	//return string(result)
 }
 
 // UnicodeDecodeString 解码unicode
@@ -122,9 +128,3 @@ func isASCIIUpper(c byte) bool {
 func isASCIIDigit(c byte) bool {
 	return '0' <= c && c <= '9'
 }
-
-// SubStr TODO
-// 截取字符串，支持多字节字符
-// start：起始下标，负数从从尾部开始，最后一个为-1
-// length：截取长度，负数表示截取到末尾
-var SubStr = internal.SubStr

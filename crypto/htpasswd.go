@@ -16,7 +16,7 @@ type Htpasswd struct {
 // 在Windows, Netware 和TPF上，这是默认的加密方式
 func (h *Htpasswd) Apr1Md5Password(pwd, salt string) string {
 	if salt == "" {
-		salt = utils.GetRandomString(8) //随机生成字符串
+		salt = utils.RandomString(8) //随机生成字符串
 	}
 	hash := apr1Md5(pwd, salt)
 	return fmt.Sprintf("$apr1$%s$%s", salt, hash)

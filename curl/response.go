@@ -3,9 +3,9 @@ package curl
 import (
 	"context"
 	"fmt"
+	"github.com/samber/lo"
 	"github.com/tianlin0/go-plat-utils/conv"
 	"github.com/tianlin0/go-plat-utils/logs"
-	"github.com/tianlin0/go-plat-utils/utils"
 	"net/http"
 	"time"
 )
@@ -59,12 +59,12 @@ func (p *Response) getLoggerResponse(startTime time.Time) *loggerResponse {
 	logResp.Request.Data = p.Request.Data
 
 	if len(logResp.Response) > defaultPrintLogDataLength {
-		logResp.Response = utils.SubStr(logResp.Response, 0, defaultPrintLogDataLength)
+		logResp.Response = lo.Elipse(logResp.Response, defaultPrintLogDataLength)
 	}
 	dataString, err := getDataString(p.Request.Data)
 	if err == nil {
 		if len(dataString) > defaultPrintLogDataLength {
-			logResp.Request.Data = utils.SubStr(dataString, 0, defaultPrintLogDataLength)
+			logResp.Request.Data = lo.Elipse(dataString, defaultPrintLogDataLength)
 		}
 	}
 

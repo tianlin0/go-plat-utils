@@ -1,7 +1,7 @@
 package utils
 
 import (
-	"github.com/tianlin0/go-plat-utils/cond"
+	"github.com/samber/lo"
 	"github.com/tianlin0/go-plat-utils/conv"
 	"reflect"
 	"strconv"
@@ -81,44 +81,17 @@ func Join(i interface{}, s string) string {
 
 }
 
-// AppendUnique 给数组添加不重复的对象
-func AppendUnique[T comparable](slice []T, elems ...T) []T {
-	allSlice := make([]T, 0)
-
-	if len(slice) > 0 {
-		for _, elem := range slice {
-			if ok, _ := cond.Contains(allSlice, elem); ok {
-				continue
-			}
-			allSlice = append(allSlice, elem)
-		}
-	}
-	if len(elems) > 0 {
-		for _, elem := range elems {
-			if ok, _ := cond.Contains(allSlice, elem); ok {
-				continue
-			}
-			allSlice = append(allSlice, elem)
-		}
-	}
-
-	return allSlice
+// AppendUniq 给数组添加不重复的对象
+func AppendUniq[T comparable](slice []T, elems ...T) []T {
+	slice = append(slice, elems...)
+	return lo.Uniq(slice)
 }
 
 // RemoveItem 移除一个元素
 func RemoveItem[T comparable](slice []T, oneElem T) []T {
-	allSlice := make([]T, 0)
-
-	if len(slice) > 0 {
-		for _, elem := range slice {
-			if elem == oneElem {
-				continue
-			}
-			allSlice = append(allSlice, elem)
-		}
-	}
-
-	return allSlice
+	return lo.Filter(slice, func(item T, index int) bool {
+		return item != oneElem
+	})
 }
 
 // SliceDiff find elements that in slice1 but not in slice2
@@ -137,5 +110,6 @@ func SliceDiff[T comparable](slice1 []T, slice2 []T) []T {
 			diff = append(diff, s1)
 		}
 	}
+
 	return diff
 }

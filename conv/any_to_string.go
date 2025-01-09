@@ -2,9 +2,9 @@ package conv
 
 import (
 	"fmt"
+	"github.com/samber/lo"
 	"github.com/tianlin0/go-plat-utils/cond"
 	"github.com/tianlin0/go-plat-utils/conf"
-	"github.com/tianlin0/go-plat-utils/internal"
 	jsoniterForNil "github.com/tianlin0/go-plat-utils/internal/jsoniter/go"
 	"reflect"
 	"regexp"
@@ -228,7 +228,7 @@ func getByTypeString(src interface{}) (string, error) {
 
 	//看看是否是数组类型
 	if len(strType) >= 2 {
-		subTemp := internal.SubStr(strType, 0, 2)
+		subTemp := lo.Substring(strType, 0, 2)
 		if subTemp == "[]" && strType != "[]string" {
 			arrTemp := reflect.ValueOf(src)
 			newArrTemp := make([]interface{}, 0)

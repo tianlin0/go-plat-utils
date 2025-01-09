@@ -29,6 +29,7 @@ require (
 	github.com/rifflock/lfshook v0.0.0-20180920164130-b9218ef580f5
 	github.com/robfig/cron/v3 v3.0.1
 	github.com/rulego/rulego v0.27.0
+	github.com/samber/lo v1.47.0
 	github.com/sirupsen/logrus v1.9.3
 	github.com/soniah/evaler v2.2.0+incompatible
 	github.com/stretchr/testify v1.9.0
