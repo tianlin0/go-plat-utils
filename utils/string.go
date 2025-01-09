@@ -1,9 +1,8 @@
 package utils
 
 import (
-	"crypto/md5"
-	"encoding/hex"
 	"fmt"
+	"github.com/marspere/goencrypt"
 	"math/rand"
 	"strings"
 	"time"
@@ -109,11 +108,8 @@ func NewUUID() string {
 
 // GetUUID 获取uuid格式串
 func GetUUID(s string) string {
-	uuid := func(s string) string {
-		d := md5.Sum([]byte(s))
-		return hex.EncodeToString(d[:])
-	}(s)
-	if len(uuid) != 32 {
+	uuid, err := goencrypt.MD5(s)
+	if len(uuid) != 32 || err != nil {
 		return ""
 	}
 	return fmt.Sprintf("%s-%s-%s-%s-%s", uuid[0:8], uuid[8:12], uuid[12:16], uuid[16:20], uuid[20:])

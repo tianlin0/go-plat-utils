@@ -1,6 +1,7 @@
 package utils_test
 
 import (
+	"fmt"
 	"github.com/tianlin0/go-plat-utils/utils"
 	"testing"
 )
@@ -29,4 +30,9 @@ func TestAesCbc(t *testing.T) {
 		}
 		return ret[0].(string), true
 	})
+}
+
+func TestUUID(t *testing.T) {
+	aa := utils.GetUUID("sssss")
+	fmt.Println(aa)
 }
