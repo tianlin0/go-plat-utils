@@ -65,6 +65,13 @@ func TestGetId(t *testing.T) {
 }
 
 func TestGetIdList(t *testing.T) {
+	snowflake.DefaultConfig(&snowflake.Config{
+		CenterBits: 23,
+		WorkerBits: 20,
+		Epoch:      1711442064000, //北京时间：2024-03-26 16:34:24
+		SeqBits:    20,
+	})
+
 	worker, err := snowflake.New(&snowflake.Worker{
 		WorkerId: 1,
 		CenterId: 1,
@@ -73,6 +80,6 @@ func TestGetIdList(t *testing.T) {
 		t.Fatalf("Init Worker Error")
 		return
 	}
-	list := worker.NextIdList(1000000)
-	fmt.Println(list[0:5])
+	list := worker.NextIdList(1)
+	fmt.Printf("%b\n", list[0])
 }

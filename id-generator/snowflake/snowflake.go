@@ -7,11 +7,13 @@ import (
 	"time"
 )
 
-type SnowFlakeConfig struct {
+// Config xxxx
+type Config struct {
+	TimeBits    uint8 // 时间位数
 	CenterBits  uint8 // 数据中心位数
 	WorkerBits  uint8 // 机器id位数
-	Epoch       int64 // 开始毫秒时间戳
 	SeqBits     uint8 // 序号位数
+	Epoch       int64 // 开始毫秒时间戳
 	centerMax   int64 // 检测数据中心是否溢出
 	workerMax   int64 // 检测机器中心是否溢出
 	seqMax      int64 // 检测序号是否溢出
@@ -21,13 +23,14 @@ type SnowFlakeConfig struct {
 }
 
 var (
-	defaultFlakeConfig *SnowFlakeConfig
+	defaultFlakeConfig *Config
+	bigIntBits         uint8 = 63
 )
 
 // DefaultConfig 设置默认配置
-func DefaultConfig(cfg *SnowFlakeConfig) {
+func DefaultConfig(cfg *Config) {
 	if cfg == nil {
-		cfg = &SnowFlakeConfig{
+		cfg = &Config{
 			CenterBits: 5,
 			WorkerBits: 5,
 			Epoch:      1711442064000, //北京时间：2024-03-26 16:34:24
@@ -37,10 +40,15 @@ func DefaultConfig(cfg *SnowFlakeConfig) {
 	if defaultFlakeConfig == nil {
 		defaultFlakeConfig = cfg
 	}
+
+	defaultTimeBits := bigIntBits - defaultFlakeConfig.CenterBits - defaultFlakeConfig.WorkerBits - defaultFlakeConfig.SeqBits
+	defaultFlakeConfig.TimeBits = lo.Ternary(cfg.TimeBits > 0, cfg.TimeBits, defaultFlakeConfig.TimeBits)
+	defaultFlakeConfig.TimeBits = lo.Ternary(defaultFlakeConfig.TimeBits <= 0, defaultTimeBits, defaultFlakeConfig.TimeBits)
+
 	defaultFlakeConfig.CenterBits = lo.Ternary(cfg.CenterBits > 0, cfg.CenterBits, defaultFlakeConfig.CenterBits)
 	defaultFlakeConfig.WorkerBits = lo.Ternary(cfg.WorkerBits > 0, cfg.WorkerBits, defaultFlakeConfig.WorkerBits)
-	defaultFlakeConfig.Epoch = lo.Ternary(cfg.Epoch > defaultFlakeConfig.Epoch, cfg.Epoch, defaultFlakeConfig.Epoch)
 	defaultFlakeConfig.SeqBits = lo.Ternary(cfg.SeqBits > 0, cfg.SeqBits, defaultFlakeConfig.SeqBits)
+	defaultFlakeConfig.Epoch = lo.Ternary(cfg.Epoch > defaultFlakeConfig.Epoch, cfg.Epoch, defaultFlakeConfig.Epoch)
 
 	defaultFlakeConfig.centerMax = -1 ^ (-1 << defaultFlakeConfig.CenterBits)
 	defaultFlakeConfig.workerMax = -1 ^ (-1 << defaultFlakeConfig.WorkerBits)
@@ -105,10 +113,15 @@ func (w *Worker) NextId() int64 {
 	}
 
 	w.lastTimestamp = currentTimestamp
-	return ((currentTimestamp - w.Epoch) << defaultFlakeConfig.timeShift) |
+	total := ((currentTimestamp - w.Epoch) << defaultFlakeConfig.timeShift) |
 		(w.CenterId << defaultFlakeConfig.centerShift) |
 		(w.WorkerId << defaultFlakeConfig.workerShift) |
 		w.seq
+	//需要将最高位设置为0
+	if total>>bigIntBits == -1 {
+		return (total | 0x4000000000000000) & 0x7FFFFFFFFFFFFFFF
+	}
+	return total
 }
 
 func (w *Worker) NextIdList(num int) []int64 {
