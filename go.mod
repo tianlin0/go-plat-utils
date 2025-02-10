@@ -39,6 +39,7 @@ require (
 	github.com/tidwall/gjson v1.18.0
 	github.com/tidwall/sjson v1.2.5
 	github.com/timandy/routine v1.1.4
+	github.com/wneessen/niljson v0.1.0
 	golang.org/x/crypto v0.30.0
 	golang.org/x/net v0.32.0
 	gopkg.in/yaml.v3 v3.0.1

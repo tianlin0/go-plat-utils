@@ -1,8 +1,8 @@
 package jsoniter
 
 import (
-    "github.com/modern-go/reflect2"
-    "unsafe"
+	"github.com/modern-go/reflect2"
+	"unsafe"
 )
 
 func decoderOfNil(ctx *ctx, typ reflect2.Type) ValDecoder {
