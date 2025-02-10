@@ -16,11 +16,11 @@ type redSyncLock struct {
 	rs          *redsync.Redsync
 	mx          *redsync.Mutex
 	key         string
-	expire      time.Duration
+	expiration  time.Duration
 }
 
 // NewRedSync 新的锁
-func NewRedSync(redisClient *redis.Client, key string, expire time.Duration) (*redSyncLock, error) {
+func NewRedSync(redisClient *redis.Client, key string, expiration time.Duration) (*redSyncLock, error) {
 	if redisClient == nil {
 		return nil, fmt.Errorf("redis client is nil")
 	}
@@ -28,7 +28,7 @@ func NewRedSync(redisClient *redis.Client, key string, expire time.Duration) (*r
 	rLock := new(redSyncLock)
 	rLock.redisClient = redisClient
 	rLock.key = getLockerKeyName(key)
-	rLock.expire = expire
+	rLock.expiration = expiration
 
 	// implements the `redis.Pool` interface.
 	client := goredislib.NewClient(&goredislib.Options{
@@ -45,13 +45,13 @@ func NewRedSync(redisClient *redis.Client, key string, expire time.Duration) (*r
 	rLock.rs = rs
 
 	//redis时间不能太短，避免大量的redis操作
-	if expire < DefaultExpireTime {
-		expire = DefaultExpireTime
+	if expiration < DefaultExpireTime {
+		expiration = DefaultExpireTime
 	}
 
 	// Obtain a new mutex by using the same name for all instances wanting the
 	// same lock.
-	mutex := rs.NewMutex(getLockerKeyName(key), redsync.WithExpiry(expire))
+	mutex := rs.NewMutex(getLockerKeyName(key), redsync.WithExpiry(expiration))
 
 	rLock.mx = mutex
 
@@ -63,7 +63,6 @@ func (l *redSyncLock) Lock(ctx context.Context) (bool, error) {
 	if err := l.mx.LockContext(ctx); err != nil {
 		return false, err
 	}
-
 	return true, nil
 }
 
