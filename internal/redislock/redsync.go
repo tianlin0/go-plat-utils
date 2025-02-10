@@ -1,4 +1,4 @@
-package lredis
+package redislock
 
 import (
 	"context"
@@ -10,8 +10,8 @@ import (
 	"time"
 )
 
-// redSyncLock
-type redSyncLock struct {
+// RedSyncLock 	redis锁
+type RedSyncLock struct {
 	redisClient *redis.Client
 	rs          *redsync.Redsync
 	mx          *redsync.Mutex
@@ -20,12 +20,16 @@ type redSyncLock struct {
 }
 
 // NewRedSync 新的锁
-func NewRedSync(redisClient *redis.Client, key string, expiration time.Duration) (*redSyncLock, error) {
+func NewRedSync(redisClient *redis.Client, key string, expiration time.Duration) (*RedSyncLock, error) {
 	if redisClient == nil {
 		return nil, fmt.Errorf("redis client is nil")
 	}
+	err := RedisPing(redisClient)
+	if err != nil {
+		return nil, err
+	}
 
-	rLock := new(redSyncLock)
+	rLock := new(RedSyncLock)
 	rLock.redisClient = redisClient
 	rLock.key = getLockerKeyName(key)
 	rLock.expiration = expiration
@@ -59,7 +63,7 @@ func NewRedSync(redisClient *redis.Client, key string, expiration time.Duration)
 }
 
 // Lock 上锁
-func (l *redSyncLock) Lock(ctx context.Context) (bool, error) {
+func (l *RedSyncLock) Lock(ctx context.Context) (bool, error) {
 	if err := l.mx.LockContext(ctx); err != nil {
 		return false, err
 	}
@@ -67,7 +71,7 @@ func (l *redSyncLock) Lock(ctx context.Context) (bool, error) {
 }
 
 // UnLock 解锁
-func (l *redSyncLock) UnLock(ctx context.Context) (bool, error) {
+func (l *RedSyncLock) UnLock(ctx context.Context) (bool, error) {
 	// Release the lock so other processes or threads can obtain a lock.
 	if ok, err := l.mx.UnlockContext(ctx); !ok || err != nil {
 		return false, err
@@ -76,7 +80,7 @@ func (l *redSyncLock) UnLock(ctx context.Context) (bool, error) {
 }
 
 // TryLock 尝试加锁，非阻塞
-func (l *redSyncLock) TryLock(ctx context.Context) (bool, error) {
+func (l *RedSyncLock) TryLock(ctx context.Context) (bool, error) {
 	// Release the lock so other processes or threads can obtain a lock.
 	if err := l.mx.TryLockContext(ctx); err != nil {
 		return false, err

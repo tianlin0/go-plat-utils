@@ -1,4 +1,4 @@
-package lredis
+package redislock
 
 import (
 	"context"

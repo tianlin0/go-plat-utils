@@ -1,4 +1,4 @@
-package lredis
+package redislock
 
 import (
 	"context"
@@ -14,8 +14,8 @@ var (
 	oneSleep = 100 * time.Millisecond
 )
 
-// redisLock
-type redisLock struct {
+// RedisLock redis锁
+type RedisLock struct {
 	redisClient *redis.Client
 
 	key         string
@@ -30,13 +30,17 @@ type redisLock struct {
 }
 
 // NewRedisLock 新的锁
-func NewRedisLock(redisClient *redis.Client, key string, expiration time.Duration) (*redisLock, error) {
+func NewRedisLock(redisClient *redis.Client, key string, expiration time.Duration) (*RedisLock, error) {
 	if redisClient == nil {
 		return nil, fmt.Errorf("redis client is nil")
 	}
+	err := RedisPing(redisClient)
+	if err != nil {
+		return nil, err
+	}
 
 	b := make([]byte, 16)
-	_, err := rand.Read(b)
+	_, err = rand.Read(b)
 	if err != nil {
 		return nil, err
 	}
@@ -49,7 +53,7 @@ func NewRedisLock(redisClient *redis.Client, key string, expiration time.Duratio
 
 	times := int(expiration/oneSleep) + 1
 
-	return &redisLock{
+	return &RedisLock{
 		redisClient: redisClient,
 		key:         getLockerKeyName(key),
 		value:       v,
@@ -59,12 +63,12 @@ func NewRedisLock(redisClient *redis.Client, key string, expiration time.Duratio
 }
 
 // Lock 上锁
-func (l *redisLock) Lock(ctx context.Context) (bool, error) {
+func (l *RedisLock) Lock(ctx context.Context) (bool, error) {
 	return l.lockContext(ctx, l.tries)
 }
 
 // UnLock 解锁
-func (l *redisLock) UnLock(ctx context.Context) (bool, error) {
+func (l *RedisLock) UnLock(ctx context.Context) (bool, error) {
 	l.mu.Lock()
 	defer l.mu.Unlock()
 
@@ -108,12 +112,12 @@ func (l *redisLock) UnLock(ctx context.Context) (bool, error) {
 }
 
 // TryLock 尝试加锁
-func (l *redisLock) TryLock(ctx context.Context) (bool, error) {
+func (l *RedisLock) TryLock(ctx context.Context) (bool, error) {
 	return l.lockContext(ctx, 1)
 }
 
 // 锁自动续期
-func (l *redisLock) autoRenew() {
+func (l *RedisLock) autoRenew() {
 	ticker := time.NewTicker(l.expiration / 2)
 	defer ticker.Stop()
 
@@ -139,7 +143,7 @@ func (l *redisLock) autoRenew() {
 	}
 }
 
-func (l *redisLock) lockContext(ctx context.Context, tries int) (bool, error) {
+func (l *RedisLock) lockContext(ctx context.Context, tries int) (bool, error) {
 	if ctx == nil {
 		ctx = context.Background()
 	}
