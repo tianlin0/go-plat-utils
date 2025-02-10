@@ -77,6 +77,10 @@ func (l *redisLock) UnLock(ctx context.Context) (bool, error) {
 		return true, nil
 	}
 
+	if ctx == nil {
+		ctx = context.Background()
+	}
+
 	unlockScript := `
         local key = KEYS[1]
         local identifier = ARGV[1]
@@ -106,6 +110,33 @@ func (l *redisLock) UnLock(ctx context.Context) (bool, error) {
 // TryLock 尝试加锁
 func (l *redisLock) TryLock(ctx context.Context) (bool, error) {
 	return l.lockContext(ctx, 1)
+}
+
+// 锁自动续期
+func (l *redisLock) autoRenew() {
+	ticker := time.NewTicker(l.expiration / 2)
+	defer ticker.Stop()
+
+	for {
+		select {
+		case <-ticker.C:
+			script := `
+                if redis.call('GET', KEYS[1]) == ARGV[1] then
+                    redis.call('EXPIRE', KEYS[1], ARGV[2])
+                    return 1
+                else
+                    return 0
+                end
+            `
+			_, err := l.redisClient.Eval(l.renewCtx, script, []string{l.key}, l.value, l.expiration.Seconds()).Result()
+			if err != nil {
+				fmt.Println("Error renewing lock:", err)
+				return
+			}
+		case <-l.renewCtx.Done():
+			return
+		}
+	}
 }
 
 func (l *redisLock) lockContext(ctx context.Context, tries int) (bool, error) {
@@ -148,6 +179,7 @@ func (l *redisLock) lockContext(ctx context.Context, tries int) (bool, error) {
 			l.isLocked = true
 			l.count++
 			l.renewCtx, l.renewCancel = context.WithCancel(context.Background())
+			go l.autoRenew()
 			return true, nil
 		}
 	}
