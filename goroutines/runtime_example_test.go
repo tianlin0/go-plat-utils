@@ -16,13 +16,13 @@ func ExampleGoAsync() {
 	goroutines.OpenRoutinePool(9)
 	defer goroutines.CloseRoutinePool()
 
-	_, pId := goroutines.GetContext()
+	_, pId, _ := goroutines.GetContext()
 	fmt.Println("start: " + pId)
 
 	for i := 0; i < 10; i++ {
 		goroutines.GoAsync(func(params ...interface{}) {
 			fmt.Printf("i=%d \n", params[0].(int))
-			c, pId := goroutines.GetContext()
+			c, pId, _ := goroutines.GetContext()
 			fmt.Println(c, pId)
 			if c != nil {
 				fmt.Println((*c).Value("fish"), pId)
@@ -34,11 +34,11 @@ func ExampleGoAsync() {
 
 	time.Sleep(2 * time.Second)
 
-	c2, pId2 := goroutines.GetContext()
+	c2, pId2, _ := goroutines.GetContext()
 	fmt.Println("pig2:", (*c2).Value("pig"), (*c2).Value("fish"), pId2)
 
 	goroutines.GoAsync(func(params ...interface{}) {
-		c3, pId3 := goroutines.GetContext()
+		c3, pId3, _ := goroutines.GetContext()
 		if c3 != nil {
 			fmt.Println("pig3:", (*c3).Value("pig"), (*c3).Value("fish"), pId3)
 		}

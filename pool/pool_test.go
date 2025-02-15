@@ -39,6 +39,7 @@ func TestPool(t *testing.T) {
 	if err != nil {
 		return
 	}
+	defer sp.ClosePool()
 
 	err = sp.GetOne(func(v *SimpleObject) {
 		v.Name = "aaaa"

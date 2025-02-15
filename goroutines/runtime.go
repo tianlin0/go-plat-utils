@@ -8,51 +8,74 @@ import (
 	"log"
 	"runtime"
 	"strings"
+	"sync"
 )
 
+type asyncObj struct {
+	poolMutex   sync.Mutex
+	panicMutex  sync.Mutex
+	antsPool    *ants.Pool
+	panicHandle func(err error, retRecover any) //全局Panic后的处理方法
+	oncePool    *internal.Once
+}
+
 var (
-	defaultAntsPool    *ants.Pool
-	defaultPanicHandle func(err error, retRecover any) //全局Panic后的处理方法
-	oncePool           = &internal.Once{}
+	defaultAsyncObj = asyncObj{
+		oncePool: &internal.Once{},
+	}
 )
 
 // SetDefaultPanicHandle panic的方法
 func SetDefaultPanicHandle(c func(err error, retRecover any)) {
 	if c != nil {
-		defaultPanicHandle = c
+		defaultAsyncObj.panicMutex.Lock()
+		defer defaultAsyncObj.panicMutex.Unlock()
+		defaultAsyncObj.panicHandle = c
 	}
 }
 
 // OpenRoutinePool 启动一个全局的goroutine的协程池，只会执行一次
 func OpenRoutinePool(nums int) *ants.Pool {
-	if defaultAntsPool == nil {
-		err := oncePool.Do(func() error {
-			if nums == 0 {
-				nums = ants.DefaultAntsPoolSize
-			}
-			newPool, err := ants.NewPool(nums)
-			if err == nil {
-				defaultAntsPool = newPool
-				return nil
-			}
-			return err
-		})
-		if err != nil {
-			log.Println("OpenRoutinePool error:", err)
+	if defaultAsyncObj.antsPool != nil {
+		if nums > 0 {
+			defaultAsyncObj.antsPool.Tune(nums)
+		}
+		return defaultAsyncObj.antsPool
+	}
+
+	defaultAsyncObj.poolMutex.Lock()
+	defer defaultAsyncObj.poolMutex.Unlock()
+
+	err := defaultAsyncObj.oncePool.Do(func() error {
+		if nums == 0 {
+			nums = ants.DefaultAntsPoolSize
+		}
+		newPool, err := ants.NewPool(nums)
+		if err == nil {
+			defaultAsyncObj.antsPool = newPool
 			return nil
 		}
+		return err
+	})
+	if err != nil {
+		log.Println("OpenRoutinePool error:", err)
+		return nil
 	}
-	return defaultAntsPool
+
+	return defaultAsyncObj.antsPool
 }
 
 // CloseRoutinePool 不用了，关闭池
 func CloseRoutinePool() {
-	if defaultAntsPool != nil {
-		if !defaultAntsPool.IsClosed() {
-			defaultAntsPool.Release()
-			defaultAntsPool = nil
-		}
+	if defaultAsyncObj.antsPool == nil || defaultAsyncObj.antsPool.IsClosed() {
+		return
 	}
+
+	defaultAsyncObj.poolMutex.Lock()
+	defer defaultAsyncObj.poolMutex.Unlock()
+
+	defaultAsyncObj.antsPool.Release()
+	defaultAsyncObj.antsPool = nil
 }
 
 // GoSync 同步方法
@@ -65,8 +88,10 @@ func GoSync(task func(params ...any), params ...any) {
 			stackInfo := fmt.Sprintf("%s", buf[:n])
 			stackInfo = strings.ReplaceAll(stackInfo, "\n", "|")
 			errStr := fmt.Sprintf("panic_stack_info: %s ### %s", err, stackInfo)
-			if defaultPanicHandle != nil {
-				defaultPanicHandle(fmt.Errorf(errStr), err)
+			if defaultAsyncObj.panicHandle != nil {
+				defaultAsyncObj.panicMutex.Lock()
+				defer defaultAsyncObj.panicMutex.Unlock()
+				defaultAsyncObj.panicHandle(fmt.Errorf(errStr), err)
 			} else {
 				log.Println(errStr)
 			}
@@ -84,9 +109,11 @@ func GoAsync(task func(params ...any), params ...any) {
 		}(params...)
 	}
 	taskFun := routine.WrapTask(fun)
-	if defaultAntsPool == nil {
+	if defaultAsyncObj.antsPool == nil {
 		go taskFun.Run()
-	} else {
-		defaultAntsPool.Submit(taskFun.Run)
+		return
 	}
+	defaultAsyncObj.poolMutex.Lock()
+	defer defaultAsyncObj.poolMutex.Unlock()
+	defaultAsyncObj.antsPool.Submit(taskFun.Run)
 }
