@@ -41,14 +41,14 @@ func TestPool(t *testing.T) {
 	}
 	defer sp.ClosePool()
 
-	err = sp.GetOne(func(v *SimpleObject) {
+	err = sp.GetWithFunc(func(v *SimpleObject) {
 		v.Name = "aaaa"
 		fmt.Println(v)
 	})
 	if err != nil {
 		return
 	}
-	err = sp.GetOne(func(v *SimpleObject) {
+	err = sp.GetWithFunc(func(v *SimpleObject) {
 		v.Name = "bbb"
 		fmt.Println(v)
 	})

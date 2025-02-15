@@ -12,8 +12,8 @@ import (
 )
 
 type asyncObj struct {
-	poolMutex   sync.Mutex
-	panicMutex  sync.Mutex
+	poolMutex   sync.RWMutex
+	panicMutex  sync.RWMutex
 	antsPool    *ants.Pool
 	panicHandle func(err error, retRecover any) //全局Panic后的处理方法
 	oncePool    *internal.Once
@@ -88,11 +88,13 @@ func GoSync(task func(params ...any), params ...any) {
 			stackInfo := fmt.Sprintf("%s", buf[:n])
 			stackInfo = strings.ReplaceAll(stackInfo, "\n", "|")
 			errStr := fmt.Sprintf("panic_stack_info: %s ### %s", err, stackInfo)
+
+			defaultAsyncObj.panicMutex.RLock()
 			if defaultAsyncObj.panicHandle != nil {
-				defaultAsyncObj.panicMutex.Lock()
-				defer defaultAsyncObj.panicMutex.Unlock()
 				defaultAsyncObj.panicHandle(fmt.Errorf(errStr), err)
+				defaultAsyncObj.panicMutex.RUnlock()
 			} else {
+				defaultAsyncObj.panicMutex.RUnlock()
 				log.Println(errStr)
 			}
 			return
@@ -113,7 +115,7 @@ func GoAsync(task func(params ...any), params ...any) {
 		go taskFun.Run()
 		return
 	}
-	defaultAsyncObj.poolMutex.Lock()
-	defer defaultAsyncObj.poolMutex.Unlock()
+	defaultAsyncObj.poolMutex.RLock()
+	defer defaultAsyncObj.poolMutex.RUnlock()
 	defaultAsyncObj.antsPool.Submit(taskFun.Run)
 }

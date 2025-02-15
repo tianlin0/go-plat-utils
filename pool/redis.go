@@ -51,8 +51,8 @@ func (p *RedisPool) ClosePool() error {
 	return err
 }
 
-// GetOne 从连接池中获取一个连接，使用完毕后需要调用conn.Close()关闭连接
-func (p *RedisPool) GetOne(ctx context.Context, callFunc func(conn redis.Conn)) error {
+// GetWithFunc 从连接池中获取一个连接，使用完毕后需要调用conn.Close()关闭连接
+func (p *RedisPool) GetWithFunc(ctx context.Context, callFunc func(conn redis.Conn)) error {
 	if p.redisPool == nil {
 		return fmt.Errorf("pool has closed")
 	}
