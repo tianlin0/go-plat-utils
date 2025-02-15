@@ -21,7 +21,6 @@ type Executable func(context.Context) (interface{}, error)
 ErrCallbackFunc 回调函数
 
 	nowAttemptCount 当前尝试次数
-	remainCount 剩余次数
 	err 错误
 */
 type ErrCallbackFunc func(err error) error
@@ -123,7 +122,6 @@ func (r *retry) doRetryWithCtx(parentCtx context.Context, fn Executable) (interf
 		//
 		case <-parentCtx.Done():
 			return nil, parentCtx.Err()
-
 		case err := <-fail:
 			if parentCtxErr := parentCtx.Err(); parentCtxErr != nil {
 				return nil, parentCtxErr
