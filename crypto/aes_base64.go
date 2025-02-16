@@ -94,7 +94,7 @@ func getAesKeyFromBase64(keyBase64 string) []byte {
 
 	if len(key) != 16 && len(key) != 24 && len(key) != 32 {
 		//太短或太长，则进行转化
-		newKey := Md5(string(key))
+		newKey := SHA(MD5, string(key))
 		key = []byte(newKey)
 	}
 	return key
