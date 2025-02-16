@@ -71,12 +71,13 @@ func hashMd5(s string, printType int) string {
 	if err != nil {
 		return ""
 	}
+	vStr := string(value)
 	if printType == goencrypt.PrintHex {
-		return string(value)
+		return vStr
 	}
-	contentByte, err := hex.DecodeString(string(value))
+	contentByte, err := hex.DecodeString(vStr)
 	if err != nil {
-		return string(value)
+		return vStr
 	}
 	return shaEncode(contentByte, printType)
 }
