@@ -17,6 +17,15 @@ func Md5(s string) string {
 	return string(value)
 }
 
+// HashSha1 计算出md5的值
+func HashSha1(s string) string {
+	value, err := goencrypt.SHA(goencrypt.SHA1, []byte(s), goencrypt.PrintHex)
+	if err != nil {
+		return ""
+	}
+	return value
+}
+
 // HashSha256 转换为sha256字符
 func HashSha256(s string) string {
 	hash := sha256.Sum256([]byte(s))

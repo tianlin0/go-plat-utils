@@ -17,6 +17,15 @@ func ExampleMd5() {
 	// Output:
 	// 5d41402abc4b2a76b9719d911017c592
 }
+func ExampleSha1() {
+	str := "hello"
+	res := crypto.HashSha1(str)
+
+	fmt.Println(res)
+
+	// Output:
+	// aaf4c61ddcc5e8a2dabede0f3b482cd9aea9434d
+}
 
 func ExampleMd51() {
 	s := "hello world"

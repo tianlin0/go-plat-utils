@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/marspere/goencrypt"
 	"github.com/samber/lo"
+	"github.com/tianlin0/go-plat-utils/utils/id"
 	"strings"
 	"unicode/utf8"
 
@@ -87,29 +88,39 @@ func ChangeVariableName(varName string, toType ...string) string {
 
 // NewUUID 新建uuid
 func NewUUID() string {
-	uuidStr := ""
-	uuids, err := gguid.NewUUID()
-	if err == nil {
-		uuidStr = uuids.String()
-		if uuidStr != "" {
-			return uuidStr
+	uuidGenerators := []func() (string, error){ // 定义一个切片，存储不同的UUID生成函数
+		func() (string, error) {
+			uuids, err := gguid.NewUUID()
+			if err != nil {
+				return "", err
+			}
+			return uuids.String(), nil
+		},                                                           // 使用gguid生成UUID
+		func() (string, error) { return gguid.New().String(), nil }, // 使用gguid的另一个生成方法
+		func() (string, error) {
+			uuidTemp, err := gouuid.NewV4()
+			if err != nil {
+				return "", err
+			}
+			return uuidTemp.String(), nil
+		}, // 使用gouuid生成UUID
+		func() (string, error) {
+			uuidTemp, err := id.GeneratorBase32()
+			if err != nil {
+				return "", err
+			}
+			return GetUUID(uuidTemp), nil
+		}, // 使用sonyflake生成UUID
+	}
+
+	for _, generator := range uuidGenerators { // 遍历每个UUID生成函数
+		uuidStr, err := generator()      // 尝试生成UUID
+		if err == nil && uuidStr != "" { // 如果没有错误且UUID字符串不为空
+			return uuidStr // 返回生成的UUID字符串
 		}
 	}
 
-	uuidStr = gguid.New().String()
-	if uuidStr != "" {
-		return uuidStr
-	}
-
-	uuidTemp, err := gouuid.NewV4()
-	if err == nil {
-		uuidStr = uuidTemp.String()
-		if uuidStr != "" {
-			return uuidStr
-		}
-	}
-
-	return uuidStr
+	return "" // 如果所有方法都失败，返回空字符串
 }
 
 // GetUUID 获取uuid格式串
