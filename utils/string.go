@@ -95,7 +95,7 @@ func NewUUID() string {
 				return "", err
 			}
 			return uuids.String(), nil
-		},                                                           // 使用gguid生成UUID
+		}, // 使用gguid生成UUID
 		func() (string, error) { return gguid.New().String(), nil }, // 使用gguid的另一个生成方法
 		func() (string, error) {
 			uuidTemp, err := gouuid.NewV4()
