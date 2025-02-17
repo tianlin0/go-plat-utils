@@ -2,10 +2,14 @@ package crypto
 
 import (
 	"crypto/hmac"
+	"crypto/md5"
+	"crypto/sha1"
 	"crypto/sha256"
+	"crypto/sha512"
 	"encoding/base64"
 	"encoding/hex"
 	"github.com/marspere/goencrypt"
+	"hash"
 	"log"
 )
 
@@ -87,9 +91,33 @@ func Md5(s string) string {
 	return SHA(MD5, s)
 }
 
-// HmacSha256 转化为hmac
-func HmacSha256(s, secret string) string {
-	hashed := hmac.New(sha256.New, []byte(secret))
+// SHAWithHmac 转化为hmac
+func SHAWithHmac(sharType shaType, s, secret string, printType ...int) string {
+	pType := goencrypt.PrintHex // 默认打印类型为十六进制
+	if len(printType) > 0 {
+		pType = printType[0]
+	}
+	h := getCalculateFunc(sharType)
+	if h == nil {
+		h = sha256.New
+	}
+	hashed := hmac.New(h, []byte(secret))
 	hashed.Write([]byte(s))
-	return base64.StdEncoding.EncodeToString(hashed.Sum(nil))
+	return shaEncode(hashed.Sum(nil), pType)
+}
+
+func getCalculateFunc(sharType shaType) func() hash.Hash {
+	switch sharType {
+	case MD5:
+		return md5.New
+	case SHA1:
+		return sha1.New
+	case SHA256:
+		return sha256.New
+	case SHA512:
+		return sha512.New
+	default:
+		log.Println("Unsupported SHA type")
+		return nil
+	}
 }

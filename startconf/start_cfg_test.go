@@ -38,7 +38,7 @@ type GdpConfig struct {
 
 func TestGetAllApiUrlMap(t *testing.T) {
 
-	keyStr := "jasonsjiang29121"
+	keyStr := "tianlin020250214"
 
 	startupcfg.SetDecryptHandler(func(e startupcfg.Encrypted) (string, error) {
 		str, err := crypto.CBCDecrypt(string(e), keyStr)

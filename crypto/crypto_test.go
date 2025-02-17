@@ -8,7 +8,7 @@ import (
 )
 
 func TestAesCbc(t *testing.T) {
-	key := "jasonsjiang29121"
+	key := "tianlin020250214"
 	testCases := []*utils.TestStruct{
 		{"hello world", []any{"hello world"}, []any{"5eb63bbbe01eeed093cb22bb8f5acdc3"}, crypto.Md5},
 		{"空字符串", []any{""}, []any{"d41d8cd98f00b204e9800998ecf8427e"}, crypto.Md5},
