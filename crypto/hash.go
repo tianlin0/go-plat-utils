@@ -6,8 +6,6 @@ import (
 	"crypto/sha1"
 	"crypto/sha256"
 	"crypto/sha512"
-	"encoding/base64"
-	"encoding/hex"
 	"github.com/marspere/goencrypt"
 	"hash"
 	"log"
@@ -62,10 +60,10 @@ func calculateHash(shaType int, s string, pType int) string {
 
 func shaEncode(content []byte, decodeType int) string {
 	if decodeType == goencrypt.PrintHex {
-		return hex.EncodeToString(content)
+		return new(HexCoder).Encode(content)
 	}
 	if decodeType == goencrypt.PrintBase64 {
-		return base64.StdEncoding.EncodeToString(content)
+		return new(Base64Coder).Encode(content)
 	}
 	return string(content)
 }
@@ -79,7 +77,7 @@ func hashMd5(s string, printType int) string {
 	if printType == goencrypt.PrintHex {
 		return vStr
 	}
-	contentByte, err := hex.DecodeString(vStr)
+	contentByte, err := new(HexCoder).Decode(vStr)
 	if err != nil {
 		return vStr
 	}

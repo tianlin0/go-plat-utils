@@ -41,7 +41,7 @@ func TestGetAllApiUrlMap(t *testing.T) {
 	keyStr := "tianlin020250214"
 
 	startupcfg.SetDecryptHandler(func(e startupcfg.Encrypted) (string, error) {
-		str, err := crypto.CBCDecrypt(string(e), keyStr)
+		str, err := crypto.CbcDecrypt(string(e), keyStr, new(crypto.HexCoder))
 		if err != nil {
 			return "", err
 		}
