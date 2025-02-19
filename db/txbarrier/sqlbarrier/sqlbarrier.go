@@ -16,9 +16,8 @@ import (
 	"github.com/tianlin0/go-plat-utils/db/txbarrier"
 )
 
-const (
-	defaultTable      = "tdxa.txbarrier"
-	defaultConstraint = "barrier_unique_key"
+var (
+	defaultConn = Conn{dbType: DBTypeMysql, table: "tdxa.txbarrier", constraint: "barrier_unique_key"}
 )
 
 // Driver implements the database/sql/driver.Driver.
@@ -44,7 +43,7 @@ func (d *Driver) Open(dsn string) (driver.Conn, error) {
 		return nil, fmt.Errorf("driver must implements driver.ConnBeginTx")
 	}
 
-	wrapped := &Conn{Conn: conn, dbType: DBTypeMysql, table: defaultTable, constraint: defaultConstraint}
+	wrapped := &Conn{Conn: conn, dbType: DBTypeMysql, table: defaultConn.table, constraint: defaultConn.constraint}
 	for _, o := range d.opts {
 		o(wrapped)
 	}
