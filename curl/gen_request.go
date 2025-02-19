@@ -26,71 +26,71 @@ type genRequest struct {
 	cacheInstance      cache.CommCache[string]
 }
 
-func (p *genRequest) buildGenRequest() {
-	if p.Data == nil {
-		p.Data = ""
+func (g *genRequest) buildGenRequest() {
+	if g.Data == nil {
+		g.Data = ""
 	}
-	p.Method = getMethod(p.Method)
+	g.Method = getMethod(g.Method)
 
-	if p.Timeout <= 0 {
-		p.Timeout = defaultTimeoutSecond
+	if g.Timeout <= 0 {
+		g.Timeout = defaultTimeoutSecond
 	}
 
-	if p.Cache > 0 {
-		if p.Cache > defaultMaxCacheTime {
-			p.Cache = defaultMaxCacheTime
+	if g.Cache > 0 {
+		if g.Cache > defaultMaxCacheTime {
+			g.Cache = defaultMaxCacheTime
 		}
 	}
 
-	p.Url = strings.TrimSpace(p.Url)
-	p.Header = getHeaders(p.Header, p.Method, p.Data)
+	g.Url = strings.TrimSpace(g.Url)
+	g.Header = getHeaders(g.Header, g.Method, g.Data)
 
-	if p.handler == nil {
-		p.handler = defaultHandler
+	if g.handler == nil {
+		g.handler = defaultHandler
 	}
 
-	if p.retryPolicy == nil {
-		p.retryPolicy = new(RetryPolicy)
+	if g.retryPolicy == nil {
+		g.retryPolicy = new(RetryPolicy)
 	}
-	p.retryPolicy.buildRetryable()
+	g.retryPolicy.buildRetryable()
 
 }
 
-func (p *genRequest) getRequest() *Request {
+func (g *genRequest) getRequest() *Request {
 	req := new(Request)
-	req.Url = p.Url
-	req.Data = p.Data
-	req.Method = p.Method
-	req.Header = p.Header
-	req.Timeout = p.Timeout
-	req.Cache = p.Cache
+	req.Url = g.Url
+	req.Data = g.Data
+	req.Method = g.Method
+	req.Header = g.Header
+	req.Timeout = g.Timeout
+	req.Cache = g.Cache
 	return req
 }
 
-func (p *genRequest) Submit(ctx context.Context) *Response {
-	p.buildGenRequest()
+func (g *genRequest) Submit(ctx context.Context) *Response {
+	g.buildGenRequest()
 
-	resp := NewResponse(p.getRequest())
+	resp := NewResponse(g.getRequest())
 
-	dataString, err := getDataString(p.Data)
+	dataString, err := getDataString(g.Data)
 	if err != nil {
 		resp.Error = err
 		return resp
 	}
 
-	if p.Url == "" {
+	if g.Url == "" {
 		resp.Error = fmt.Errorf("url请求地址为空")
 		return resp
 	}
 
-	_, err = url.Parse(p.Url)
+	_, err = url.Parse(g.Url)
 	if err != nil {
-		resp.Error = fmt.Errorf("url格式错误：%s, %v", p.Url, err)
+		resp.Error = fmt.Errorf("url格式错误：%s, %v", g.Url, err)
 		return resp
 	}
 
 	if ctx == nil {
-		ctx = p.ctx
+		ctx = g.ctx
 	}
 
 	if ctx == nil {
@@ -98,8 +98,8 @@ func (p *genRequest) Submit(ctx context.Context) *Response {
 	}
 
 	startTime := time.Now()
-	if p.Cache > 0 {
-		respTxt := getDataFromCache(ctx, p)
+	if g.Cache > 0 {
+		respTxt := getDataFromCache(ctx, g)
 		if respTxt != "" {
 			resp.Response = respTxt
 			resp.fromCache = true
@@ -108,24 +108,24 @@ func (p *genRequest) Submit(ctx context.Context) *Response {
 			simpleCurlStrData := resp.getLoggerResponse(startTime)
 			logStr := fmt.Sprintf("[comm-request cache return]id:%s, data:%s",
 				resp.Id, conv.String(simpleCurlStrData))
-			printLog(ctx, p.logger, p.defaultPrintLogInt, logStr)
+			printLog(ctx, g.logger, g.defaultPrintLogInt, logStr)
 
 			return resp
 		}
 	}
 
-	postUrl := getNewPostUrl(p.Url, p.Method, dataString)
+	postUrl := getNewPostUrl(g.Url, g.Method, dataString)
 
 	logStr := fmt.Sprintf("[comm-request request] url:%s", postUrl)
-	printLog(ctx, p.logger, p.defaultPrintLogInt, logStr)
+	printLog(ctx, g.logger, g.defaultPrintLogInt, logStr)
 
 	startTime = time.Now()
-	allResp := p.httpRequest(ctx, dataString, resp)
+	allResp := g.httpRequest(ctx, dataString, resp)
 	allResp.SetDuration(startTime)
 
 	//对返回值进行检查
-	if p.retryPolicy != nil {
-		isRetry, err := p.retryPolicy.onlyCheckCondition(allResp.Response)
+	if g.retryPolicy != nil {
+		isRetry, err := g.retryPolicy.onlyCheckCondition(allResp.Response)
 		if err != nil {
 			allResp.Error = err
 		} else {
@@ -136,32 +136,32 @@ func (p *genRequest) Submit(ctx context.Context) *Response {
 	}
 
 	simpleCurlStrData := resp.getLoggerResponse(startTime)
-	if p.defaultPrintLogInt == PrintOne || p.defaultPrintLogInt == PrintAll {
-		simpleCurlStrData.printLoggerResponse(ctx, p.logger)
+	if g.defaultPrintLogInt == PrintOne || g.defaultPrintLogInt == PrintAll {
+		simpleCurlStrData.printLoggerResponse(ctx, g.logger)
 	}
 
 	if allResp.HttpStatus == http.StatusOK &&
 		allResp.Error == nil &&
 		allResp.Response != "" &&
-		p.Cache > 0 {
-		setDataToCache(ctx, p, allResp, p.Cache)
+		g.Cache > 0 {
+		setDataToCache(ctx, g, allResp, g.Cache)
 	}
 
 	return allResp
 }
 
-func (p *genRequest) getHttpRequest(ctx context.Context, dataString string) (*http.Request, error) {
-	postUrl := getNewPostUrl(p.Url, p.Method, dataString)
+func (g *genRequest) getHttpRequest(ctx context.Context, dataString string) (*http.Request, error) {
+	postUrl := getNewPostUrl(g.Url, g.Method, dataString)
 
-	httpReq, err := http.NewRequest(p.Method, postUrl, bytes.NewBufferString(dataString))
+	httpReq, err := http.NewRequest(g.Method, postUrl, bytes.NewBufferString(dataString))
 	if err != nil {
 		logStr := fmt.Sprintf("[comm-request request] url:%s, error: %s", postUrl, err.Error())
-		printLog(ctx, p.logger, p.defaultPrintLogInt, logStr)
+		printLog(ctx, g.logger, g.defaultPrintLogInt, logStr)
 		return nil, err
 	}
 
-	if len(p.Header) > 0 {
-		for k, v := range p.Header {
+	if len(g.Header) > 0 {
+		for k, v := range g.Header {
 			httpReq.Header = setHeaderValues(httpReq.Header, k, v...)
 		}
 	}
@@ -170,17 +170,17 @@ func (p *genRequest) getHttpRequest(ctx context.Context, dataString string) (*ht
 }
 
 // 递归使用
-func (p *genRequest) httpRequest(ctx context.Context, dataString string, resp *Response) *Response {
-	httpReq, err := p.getHttpRequest(ctx, dataString)
+func (g *genRequest) httpRequest(ctx context.Context, dataString string, resp *Response) *Response {
+	httpReq, err := g.getHttpRequest(ctx, dataString)
 	if err != nil {
 		resp.Error = err
 		return resp
 	}
 	resp.Error = nil
 
-	newRequest := p.getRequest()
-	if p.handler != nil {
-		err = p.handler.BeforeHandler(ctx, newRequest, httpReq)
+	newRequest := g.getRequest()
+	if g.handler != nil {
+		err = g.handler.BeforeHandler(ctx, newRequest, httpReq)
 		if err != nil {
 			resp.Error = err
 			return resp
@@ -188,15 +188,15 @@ func (p *genRequest) httpRequest(ctx context.Context, dataString string, resp *R
 	}
 
 	bodyIsJson := true
-	if p.retryPolicy != nil {
-		if p.retryPolicy.RespDateType == "string" {
+	if g.retryPolicy != nil {
+		if g.retryPolicy.RespDateType == "string" {
 			bodyIsJson = false
 		}
 	}
 
 	startTime := time.Now()
 	{ //直接请求
-		status, resData, resHeader, err := doRequest(httpReq, newRequest, p.logger, p.Timeout, p.transportConfig)
+		status, resData, resHeader, err := doRequest(httpReq, newRequest, g.logger, g.Timeout, g.transportConfig)
 		resp.Response = resData
 		resp.Request = newRequest
 		resp.HttpStatus = status
@@ -219,10 +219,10 @@ func (p *genRequest) httpRequest(ctx context.Context, dataString string, resp *R
 	simpleCurlStrData := resp.getLoggerResponse(startTime)
 	logStr := fmt.Sprintf("[comm-request http-request return]id:%s, data:%s, error:%v", simpleCurlStrData.Id,
 		conv.String(simpleCurlStrData), resp.Error)
-	printLog(ctx, p.logger, p.defaultPrintLogInt, logStr)
+	printLog(ctx, g.logger, g.defaultPrintLogInt, logStr)
 
-	if p.handler != nil {
-		err = p.handler.AfterHandler(ctx, resp)
+	if g.handler != nil {
+		err = g.handler.AfterHandler(ctx, resp)
 		if err != nil {
 			resp.Error = err
 			return resp
@@ -230,9 +230,9 @@ func (p *genRequest) httpRequest(ctx context.Context, dataString string, resp *R
 	}
 
 	//如果有返回，则判断是否成功。
-	isRetry := canRetry(p.retryPolicy, resp.Response)
+	isRetry := canRetry(g.retryPolicy, resp.Response)
 	if isRetry {
-		return p.httpRequest(ctx, dataString, resp)
+		return g.httpRequest(ctx, dataString, resp)
 	}
 	return resp
 }

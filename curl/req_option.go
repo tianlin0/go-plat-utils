@@ -15,89 +15,89 @@ const (
 )
 
 // SetDefaultPrintType PrintOne只会默认打一条，PrintAll全打，PrintNone不打
-func (r *genRequest) SetDefaultPrintType(b int) *genRequest {
+func (g *genRequest) SetDefaultPrintType(b int) *genRequest {
 	if b == PrintOne || b == PrintNone || b == PrintAll {
-		r.defaultPrintLogInt = b
+		g.defaultPrintLogInt = b
 	}
-	return r
+	return g
 }
-func (r *genRequest) SetHttpTransport(t *http.Transport) *genRequest {
-	r.transportConfig = t
-	return r
+func (g *genRequest) SetHttpTransport(t *http.Transport) *genRequest {
+	g.transportConfig = t
+	return g
 }
-func (r *genRequest) SetLogger(l logs.ILogger) *genRequest {
-	r.logger = l
-	return r
+func (g *genRequest) SetLogger(l logs.ILogger) *genRequest {
+	g.logger = l
+	return g
 }
-func (r *genRequest) SetHandler(b InjectHandler) *genRequest {
-	r.handler = b
-	return r
+func (g *genRequest) SetHandler(b InjectHandler) *genRequest {
+	g.handler = b
+	return g
 }
 
-func (r *genRequest) SetUrl(s string) *genRequest {
-	r.Url = s
-	return r
+func (g *genRequest) SetUrl(s string) *genRequest {
+	g.Url = s
+	return g
 }
-func (r *genRequest) WithContext(ctx context.Context) *genRequest {
-	r.ctx = ctx
-	return r
+func (g *genRequest) WithContext(ctx context.Context) *genRequest {
+	g.ctx = ctx
+	return g
 }
-func (r *genRequest) SetData(d interface{}) *genRequest {
-	r.Data = d
-	return r
+func (g *genRequest) SetData(d interface{}) *genRequest {
+	g.Data = d
+	return g
 }
-func (r *genRequest) SetMethod(m string) *genRequest {
-	r.Method = m
-	return r
+func (g *genRequest) SetMethod(m string) *genRequest {
+	g.Method = m
+	return g
 }
-func (r *genRequest) SetHeader(h http.Header) *genRequest {
-	r.Header = h
-	return r
+func (g *genRequest) SetHeader(h http.Header) *genRequest {
+	g.Header = h
+	return g
 }
-func (r *genRequest) SetTimeout(t time.Duration) *genRequest {
-	r.Timeout = t
-	return r
+func (g *genRequest) SetTimeout(t time.Duration) *genRequest {
+	g.Timeout = t
+	return g
 }
-func (r *genRequest) SetCache(c cache.CommCache, t time.Duration) *genRequest {
-	r.Cache = t
-	r.cacheInstance = c
-	return r
+func (g *genRequest) SetCache(c cache.CommCache[string], t time.Duration) *genRequest {
+	g.Cache = t
+	g.cacheInstance = c
+	return g
 }
-func (r *genRequest) SetRetryPolicy(p *RetryPolicy) *genRequest {
+func (g *genRequest) SetRetryPolicy(p *RetryPolicy) *genRequest {
 	if p == nil {
-		r.retryPolicy = nil //去掉重试条件
-		return r
+		g.retryPolicy = nil //去掉重试条件
+		return g
 	}
 
-	if r.retryPolicy == nil {
-		r.retryPolicy = p
+	if g.retryPolicy == nil {
+		g.retryPolicy = p
 	}
 	if p.MaxAttempts > 0 {
-		r.setRetryTimes(p.MaxAttempts)
+		g.setRetryTimes(p.MaxAttempts)
 	}
 	if p.RetryConditionFunc != nil {
-		r.retryPolicy.RetryConditionFunc = p.RetryConditionFunc
+		g.retryPolicy.RetryConditionFunc = p.RetryConditionFunc
 	}
 	if p.RetryCondition != "" {
-		r.setRetryCondition(p.RetryCondition)
+		g.setRetryCondition(p.RetryCondition)
 	}
-	r.retryPolicy.RespDateType = p.RespDateType
-	return r
+	g.retryPolicy.RespDateType = p.RespDateType
+	return g
 }
-func (r *genRequest) setRetryCondition(c string) *genRequest {
-	if r.retryPolicy == nil {
-		r.retryPolicy = new(RetryPolicy)
+func (g *genRequest) setRetryCondition(c string) *genRequest {
+	if g.retryPolicy == nil {
+		g.retryPolicy = new(RetryPolicy)
 	}
-	r.retryPolicy.RetryCondition = c
-	return r
+	g.retryPolicy.RetryCondition = c
+	return g
 }
-func (r *genRequest) setRetryTimes(t int) *genRequest {
-	if r.retryPolicy == nil {
-		r.retryPolicy = new(RetryPolicy)
+func (g *genRequest) setRetryTimes(t int) *genRequest {
+	if g.retryPolicy == nil {
+		g.retryPolicy = new(RetryPolicy)
 	}
 	if t >= 0 {
-		r.retryPolicy.MaxAttempts = t
-		r.retryPolicy.leftAttempts = t
+		g.retryPolicy.MaxAttempts = t
+		g.retryPolicy.leftAttempts = t
 	}
-	return r
+	return g
 }
