@@ -12,13 +12,6 @@ type Config struct {
 	LogLevel      LogLevel
 }
 
-var (
-	defaultConfig = &Config{
-		LoggerCtxName: "context_logger_name",
-		LogLevel:      INFO,
-	}
-)
-
 // GetConfig 获取默认配置
 func GetConfig() *Config {
 	return defaultConfig

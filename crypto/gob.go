@@ -6,7 +6,7 @@ import (
 )
 
 // GobEncode 序列化一个对象
-func GobEncode(s interface{}, en EnDeCoder) (string, error) {
+func GobEncode(s interface{}, en ...EnDeCoder) (string, error) {
 	buf := new(bytes.Buffer)
 	enc := gob.NewEncoder(buf)
 
@@ -15,20 +15,24 @@ func GobEncode(s interface{}, en EnDeCoder) (string, error) {
 		return "", err
 	}
 
-	if en == nil {
-		en = new(Base64Coder)
+	var enCode EnDeCoder = new(Base64Coder)
+	if en != nil && len(en) > 0 {
+		enCode = en[0]
 	}
 
-	return en.Encode(buf.Bytes()), nil
+	return enCode.Encode(buf.Bytes()), nil
 }
 
 // GobDecode 反序列化一个对象
-func GobDecode(s string, data interface{}, de EnDeCoder) error {
+func GobDecode(s string, data interface{}, de ...EnDeCoder) error {
 	var b bytes.Buffer
-	if de == nil {
-		de = new(Base64Coder)
+
+	var deCode EnDeCoder = new(Base64Coder)
+	if de != nil && len(de) > 0 {
+		deCode = de[0]
 	}
-	old, err := de.Decode(s)
+
+	old, err := deCode.Decode(s)
 	if err != nil {
 		return err
 	}

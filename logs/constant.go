@@ -56,3 +56,10 @@ func GetLogLevel(name string) LogLevel {
 	}
 	return 0
 }
+
+var (
+	defaultConfig = &Config{
+		LoggerCtxName: "context_logger_name",
+		LogLevel:      INFO,
+	}
+)

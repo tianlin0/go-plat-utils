@@ -34,7 +34,7 @@ func getAllKeyString(key string) string {
 
 // CbcEncrypt 加密
 // encryptOri encrypt plain text by key
-func CbcEncrypt(plainStr string, key string, en EnDeCoder) (string, error) {
+func CbcEncrypt(plainStr string, key string, en ...EnDeCoder) (string, error) {
 	var ciphertext []byte
 	var err error
 
@@ -70,16 +70,17 @@ func CbcEncrypt(plainStr string, key string, en EnDeCoder) (string, error) {
 		return "", err
 	}
 
-	if en == nil {
-		en = new(HexCoder)
+	var enCode EnDeCoder = new(HexCoder)
+	if en != nil && len(en) > 0 {
+		enCode = en[0]
 	}
 
-	return en.Encode(ciphertext), nil
+	return enCode.Encode(ciphertext), nil
 }
 
 // CbcDecrypt 解密
 // decryptOri decrypt cypher text by key
-func CbcDecrypt(cipherStr string, key string, de EnDeCoder) (string, error) {
+func CbcDecrypt(cipherStr string, key string, de ...EnDeCoder) (string, error) {
 	var ciphertext []byte
 	var err error
 
@@ -89,11 +90,12 @@ func CbcDecrypt(cipherStr string, key string, de EnDeCoder) (string, error) {
 	goroutines.GoSync(func(params ...interface{}) {
 		var block cipher.Block
 
-		if de == nil {
-			de = new(HexCoder)
+		var deCode EnDeCoder = new(HexCoder)
+		if de != nil && len(de) > 0 {
+			deCode = de[0]
 		}
 
-		ciphertext, err = de.Decode(cipherStr)
+		ciphertext, err = deCode.Decode(cipherStr)
 		if err != nil {
 			return
 		}
@@ -125,7 +127,7 @@ func CbcDecrypt(cipherStr string, key string, de EnDeCoder) (string, error) {
 
 // AesCbcEncrypt 加密
 // decryptOri decrypt cypher text by key
-func AesCbcEncrypt(plainStr string, key string, en EnDeCoder) (string, error) {
+func AesCbcEncrypt(plainStr string, key string, en ...EnDeCoder) (string, error) {
 	key = getAllKeyString(key)
 
 	keyByte := []byte(key)
@@ -142,23 +144,26 @@ func AesCbcEncrypt(plainStr string, key string, en EnDeCoder) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	if en == nil {
-		en = new(HexCoder)
+
+	var enCode EnDeCoder = new(HexCoder)
+	if en != nil && len(en) > 0 {
+		enCode = en[0]
 	}
-	return en.Encode(originText), nil
+	return enCode.Encode(originText), nil
 }
 
 // AesCbcDecrypt 解密
 // decryptOri decrypt cypher text by key
-func AesCbcDecrypt(cipherStr string, key string, de EnDeCoder) (string, error) {
+func AesCbcDecrypt(cipherStr string, key string, de ...EnDeCoder) (string, error) {
 	key = getAllKeyString(key)
 
 	keyByte := []byte(key)
 
-	if de == nil {
-		de = new(HexCoder)
+	var deCode EnDeCoder = new(HexCoder)
+	if de != nil && len(de) > 0 {
+		deCode = de[0]
 	}
-	cipherTextTemp, err := de.Decode(cipherStr)
+	cipherTextTemp, err := deCode.Decode(cipherStr)
 	if err != nil {
 		return "", err
 	}
