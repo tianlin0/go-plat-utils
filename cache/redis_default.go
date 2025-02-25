@@ -1,7 +1,7 @@
 package cache
 
 import (
-	startupCfg "github.com/tianlin0/go-plat-utils/conf/startupcfg"
+	startupCfg "github.com/tianlin0/go-plat-startupcfg/startupcfg"
 )
 
 var (

@@ -3,7 +3,7 @@ package cache
 import (
 	"context"
 	"fmt"
-	startupCfg "github.com/tianlin0/go-plat-utils/conf/startupcfg"
+	startupCfg "github.com/tianlin0/go-plat-startupcfg/startupcfg"
 	"github.com/tianlin0/go-plat-utils/conv"
 	"time"
 )

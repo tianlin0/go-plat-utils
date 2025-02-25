@@ -2,7 +2,7 @@
 package conn
 
 import (
-	"github.com/tianlin0/go-plat-utils/conf/startupcfg"
+	"github.com/tianlin0/go-plat-startupcfg/startupcfg"
 )
 
 // Connect 数据连接对象

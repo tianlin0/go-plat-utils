@@ -43,13 +43,13 @@ require (
 	github.com/soniah/evaler v2.2.0+incompatible
 	github.com/sony/sonyflake v1.2.0
 	github.com/stretchr/testify v1.9.0
+	github.com/tianlin0/go-plat-startupcfg v1.0.20250224002
 	github.com/tidwall/gjson v1.18.0
 	github.com/tidwall/sjson v1.2.5
 	github.com/timandy/routine v1.1.4
 	go.mongodb.org/mongo-driver v1.17.2
 	golang.org/x/crypto v0.30.0
 	golang.org/x/net v0.32.0
-	gopkg.in/yaml.v3 v3.0.1
 )
 
 require (
@@ -95,4 +95,5 @@ require (
 	golang.org/x/sync v0.10.0 // indirect
 	golang.org/x/sys v0.28.0 // indirect
 	golang.org/x/text v0.21.0 // indirect
+	gopkg.in/yaml.v3 v3.0.1 // indirect
 )

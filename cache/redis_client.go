@@ -3,7 +3,7 @@ package cache
 import (
 	"context"
 	"github.com/go-redis/redis/v8"
-	startupCfg "github.com/tianlin0/go-plat-utils/conf/startupcfg"
+	startupCfg "github.com/tianlin0/go-plat-startupcfg/startupcfg"
 	"time"
 )
 
