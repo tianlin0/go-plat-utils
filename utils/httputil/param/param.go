@@ -24,7 +24,8 @@ type Location string
 // ParsePathFunc 解析地址中 /name/:name 等特殊变量
 type ParsePathFunc func(r *http.Request) map[string]string
 
-type paramStruct struct {
+// Param 可以全局定义获取参数的方法
+type Param struct {
 	defaultBodyKeyName string
 	querySplit         string
 	locationOrder      []Location
@@ -32,8 +33,8 @@ type paramStruct struct {
 }
 
 // NewParam 新建
-func NewParam() *paramStruct {
-	return &paramStruct{
+func NewParam() *Param {
+	return &Param{
 		querySplit:         ",",
 		locationOrder:      []Location{LocationBody, LocationQuery},
 		defaultBodyKeyName: "request___body___key_name",
@@ -41,19 +42,19 @@ func NewParam() *paramStruct {
 }
 
 // SetQuerySplit 设置query传数组以后需要连接起来的字符串分隔符，因为一般不会有多个
-func (p *paramStruct) SetQuerySplit(splitStr string) *paramStruct {
+func (p *Param) SetQuerySplit(splitStr string) *Param {
 	p.querySplit = splitStr
 	return p
 }
 
 // SetLocationOrder 设置获取参数的位置
-func (p *paramStruct) SetLocationOrder(list []Location) *paramStruct {
+func (p *Param) SetLocationOrder(list []Location) *Param {
 	p.locationOrder = list
 	return p
 }
 
 // SetParsePathFunc 设置获取参数的方法
-func (p *paramStruct) SetParsePathFunc(pathFunc ParsePathFunc) *paramStruct {
+func (p *Param) SetParsePathFunc(pathFunc ParsePathFunc) *Param {
 	p.parsePathFunc = pathFunc
 	return p
 }
@@ -234,7 +235,7 @@ func getAllByLocation(r *http.Request, l Location, defaultBodyKeyName string, va
 }
 
 // GetAll 转成interface{}
-func (p *paramStruct) GetAll(r *http.Request) interface{} {
+func (p *Param) GetAll(r *http.Request) interface{} {
 	allParamMap := make(map[string]interface{})
 	for _, one := range p.locationOrder {
 		oneParamMap, oneParamRet, err := getAllByLocation(r, one, p.defaultBodyKeyName, false, p.querySplit, p.parsePathFunc)
@@ -263,7 +264,7 @@ func (p *paramStruct) GetAll(r *http.Request) interface{} {
 }
 
 // GetAllMap 转成map hasAll 包含所有的变量，false则去掉默认的data返回值，简化内容
-func (p *paramStruct) GetAllMap(r *http.Request, hasAll bool) map[string]interface{} {
+func (p *Param) GetAllMap(r *http.Request, hasAll bool) map[string]interface{} {
 	paramMap := p.getAllBasic(r, false)
 	if hasAll {
 		return paramMap
@@ -286,8 +287,18 @@ func (p *paramStruct) GetAllMap(r *http.Request, hasAll bool) map[string]interfa
 	return newParamMap
 }
 
+// Parse 简单赋值
+func (p *Param) Parse(r *http.Request, dst interface{}) error {
+	paramMap := p.GetAllMap(r, true)
+	err := conv.Unmarshal(paramMap, dst)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 // GetAllString 转成字符串，主要解决[]string问题
-func (p *paramStruct) GetAllString(r *http.Request) map[string]string {
+func (p *Param) GetAllString(r *http.Request) map[string]string {
 	allParamMap := p.getAllBasic(r, true)
 	allParamStr := make(map[string]string)
 	for k, v := range allParamMap {
@@ -296,7 +307,7 @@ func (p *paramStruct) GetAllString(r *http.Request) map[string]string {
 	return allParamStr
 }
 
-func (p *paramStruct) getAllBasic(r *http.Request, valueToString bool) map[string]interface{} {
+func (p *Param) getAllBasic(r *http.Request, valueToString bool) map[string]interface{} {
 	allParamMap := make(map[string]interface{})
 	for _, one := range p.locationOrder {
 		oneParamMap, _, err := getAllByLocation(r, one, p.defaultBodyKeyName, valueToString, p.querySplit, p.parsePathFunc)
@@ -310,17 +321,17 @@ func (p *paramStruct) getAllBasic(r *http.Request, valueToString bool) map[strin
 }
 
 // GetAllHeaders 获取所有Headers
-func (p *paramStruct) GetAllHeaders(r *http.Request) http.Header {
+func (p *Param) GetAllHeaders(r *http.Request) http.Header {
 	return getAllHeaders(r)
 }
 
 // GetAllCookies 获取所有Cookies
-func (p *paramStruct) GetAllCookies(r *http.Request) map[string]*http.Cookie {
+func (p *Param) GetAllCookies(r *http.Request) map[string]*http.Cookie {
 	return getAllCookies(r)
 }
 
 // GetAllQuery 获取所有Query
-func (p *paramStruct) GetAllQuery(r *http.Request) map[string]string {
+func (p *Param) GetAllQuery(r *http.Request) map[string]string {
 	_, allParamMap, _ := getMapFromHeaderCookieQuery(LocationQuery, r, p.querySplit, p.parsePathFunc)
 	if allParamStringMap, ok := allParamMap.(map[string]string); ok {
 		return allParamStringMap
@@ -329,7 +340,7 @@ func (p *paramStruct) GetAllQuery(r *http.Request) map[string]string {
 }
 
 // GetAllBody 获取所有Body内容
-func (p *paramStruct) GetAllBody(r *http.Request) string {
+func (p *Param) GetAllBody(r *http.Request) string {
 	allParamBody, _ := getParamFromBody(r)
 	if allParamBody != "" {
 		return allParamBody
