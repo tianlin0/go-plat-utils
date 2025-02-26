@@ -9,4 +9,6 @@ import (
 func TestGeneratorBase32(t *testing.T) {
 	aa, _ := id.GeneratorBase32()
 	fmt.Println(aa)
+	aa = id.GetXId()
+	fmt.Println(aa)
 }
