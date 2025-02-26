@@ -55,6 +55,18 @@ func TestParam(t *testing.T) {
 	data := NewParam().GetAll(req)
 	fmt.Println(data)
 }
+func TestPath(t *testing.T) {
+	req := new(http.Request)
+	req.Method = http.MethodGet
+	req.URL = new(url.URL)
+	req.URL.RawQuery = "/v1/auth/auth-check?gpid=&exCluster=&paas_name=gdp-appserver-go"
+	data := NewParam().SetParsePathFunc(func(r *http.Request) map[string]string {
+		return map[string]string{
+			"name": "zhangsan",
+		}
+	}).GetAllQuery(req)
+	fmt.Println(data)
+}
 
 func setContext(ctx context.Context) context.Context {
 	newCtx := context.WithValue(ctx, "aaaa", "bbbb")

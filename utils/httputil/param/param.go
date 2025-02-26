@@ -21,10 +21,14 @@ const (
 
 type Location string
 
+// ParsePathFunc 解析地址中 /name/:name 等特殊变量
+type ParsePathFunc func(r *http.Request) map[string]string
+
 type paramStruct struct {
 	defaultBodyKeyName string
 	querySplit         string
 	locationOrder      []Location
+	parsePathFunc      ParsePathFunc
 }
 
 // NewParam 新建
@@ -48,7 +52,13 @@ func (p *paramStruct) SetLocationOrder(list []Location) *paramStruct {
 	return p
 }
 
-func getMapFromHeaderCookieQuery(l Location, r *http.Request, querySplit string) (map[string]interface{}, interface{}, bool) {
+// SetParsePathFunc 设置获取参数的方法
+func (p *paramStruct) SetParsePathFunc(pathFunc ParsePathFunc) *paramStruct {
+	p.parsePathFunc = pathFunc
+	return p
+}
+
+func getMapFromHeaderCookieQuery(l Location, r *http.Request, querySplit string, pathFunc ParsePathFunc) (map[string]interface{}, interface{}, bool) {
 	allRetParamMap := make(map[string]interface{})
 	if l == LocationHeader {
 		headerMap := getParamFromHeader(r)
@@ -66,7 +76,7 @@ func getMapFromHeaderCookieQuery(l Location, r *http.Request, querySplit string)
 	}
 	if l == LocationQuery {
 		//如果有多个，则为数组，否则为字符串
-		headerMap, _ := getParamFromQuery(r, querySplit)
+		headerMap, _ := getParamFromQuery(r, querySplit, pathFunc)
 		for k, v := range headerMap {
 			allRetParamMap[k] = v
 		}
@@ -203,13 +213,13 @@ func getMapFromBodyForm(r *http.Request, defaultBodyKeyName string) (map[string]
 	return allRetParamMap, bodyDataStr, err
 }
 
-func getAllByLocation(r *http.Request, l Location, defaultBodyKeyName string, valueToString bool, querySplit string) (map[string]interface{}, interface{}, error) {
+func getAllByLocation(r *http.Request, l Location, defaultBodyKeyName string, valueToString bool, querySplit string, pathFunc ParsePathFunc) (map[string]interface{}, interface{}, error) {
 	if l == "" {
 		return nil, nil, fmt.Errorf("location is null")
 	}
 
 	if l == LocationHeader || l == LocationCookie || l == LocationQuery {
-		allRetParam, headerMap, found := getMapFromHeaderCookieQuery(l, r, querySplit)
+		allRetParam, headerMap, found := getMapFromHeaderCookieQuery(l, r, querySplit, pathFunc)
 		if found {
 			return allRetParam, headerMap, nil
 		}
@@ -227,7 +237,7 @@ func getAllByLocation(r *http.Request, l Location, defaultBodyKeyName string, va
 func (p *paramStruct) GetAll(r *http.Request) interface{} {
 	allParamMap := make(map[string]interface{})
 	for _, one := range p.locationOrder {
-		oneParamMap, oneParamRet, err := getAllByLocation(r, one, p.defaultBodyKeyName, false, p.querySplit)
+		oneParamMap, oneParamRet, err := getAllByLocation(r, one, p.defaultBodyKeyName, false, p.querySplit, p.parsePathFunc)
 		for key, val := range oneParamMap {
 			allParamMap[key] = val
 		}
@@ -289,7 +299,7 @@ func (p *paramStruct) GetAllString(r *http.Request) map[string]string {
 func (p *paramStruct) getAllBasic(r *http.Request, valueToString bool) map[string]interface{} {
 	allParamMap := make(map[string]interface{})
 	for _, one := range p.locationOrder {
-		oneParamMap, _, err := getAllByLocation(r, one, p.defaultBodyKeyName, valueToString, p.querySplit)
+		oneParamMap, _, err := getAllByLocation(r, one, p.defaultBodyKeyName, valueToString, p.querySplit, p.parsePathFunc)
 		if err == nil && oneParamMap != nil {
 			for key, val := range oneParamMap {
 				allParamMap[key] = val
@@ -311,8 +321,11 @@ func (p *paramStruct) GetAllCookies(r *http.Request) map[string]*http.Cookie {
 
 // GetAllQuery 获取所有Query
 func (p *paramStruct) GetAllQuery(r *http.Request) map[string]string {
-	allParamMap, _ := getParamFromQuery(r, p.querySplit)
-	return allParamMap
+	_, allParamMap, _ := getMapFromHeaderCookieQuery(LocationQuery, r, p.querySplit, p.parsePathFunc)
+	if allParamStringMap, ok := allParamMap.(map[string]string); ok {
+		return allParamStringMap
+	}
+	return map[string]string{}
 }
 
 // GetAllBody 获取所有Body内容
@@ -386,7 +399,7 @@ func getParamFromCookie(req *http.Request) map[string]string {
 	return allParamMap
 }
 
-func getParamFromQuery(req *http.Request, splitString string) (map[string]string, error) {
+func getParamFromQuery(req *http.Request, splitString string, pathFunc ParsePathFunc) (map[string]string, error) {
 	allParamMap := make(map[string]string)
 	if req == nil {
 		return allParamMap, nil
@@ -409,6 +422,16 @@ func getParamFromQuery(req *http.Request, splitString string) (map[string]string
 			}
 			allParamMap[i] = tempVal
 		}
+	}
+
+	if pathFunc != nil {
+		pathMap := pathFunc(req)
+		if pathMap != nil && len(pathMap) > 0 {
+			for i, v := range pathMap {
+				allParamMap[i] = v
+			}
+		}
+
 	}
 
 	return allParamMap, err
