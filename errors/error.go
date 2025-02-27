@@ -31,7 +31,7 @@ func (err *commErr) Code() int64 {
 }
 
 // New 新建错误对象
-func New(msg string, code ...int64) error {
+func New(msg string, code ...int64) *commErr {
 	err := &commErr{
 		code:    conf.DefaultErrorCode,
 		message: msg,

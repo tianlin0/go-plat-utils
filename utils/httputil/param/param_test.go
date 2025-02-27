@@ -69,8 +69,9 @@ func TestPath(t *testing.T) {
 }
 
 type AAA struct {
-	Name  string `json:"name" validate:"len=10"`
-	Name2 string `json:"name2" validate:"required"`
+	Name   string `json:"name" validate:"len=10"`
+	Name2  string `json:"name2" validate:"required"`
+	Number int    `json:"number" validate:"required"`
 }
 
 func TestParse(t *testing.T) {
@@ -81,7 +82,9 @@ func TestParse(t *testing.T) {
 	aaa := new(AAA)
 	err := NewParam().SetParsePathFunc(func(r *http.Request) map[string]string {
 		return map[string]string{
-			"name": "111111111",
+			"name":   "1111111111",
+			"name2":  "33333",
+			"number": "0",
 		}
 	}).SetValidatorCustomErrorMessages(map[string]string{
 		"aaaa":               "dddd",
