@@ -307,7 +307,7 @@ func (p *Param) Parse(r *http.Request, dst interface{}) error {
 	}
 	//使用默认的validator标签验证
 	validate := validator.New()
-	if err := validate.Struct(dst); err != nil {
+	if err := validate.StructCtx(r.Context(), dst); err != nil {
 		return err
 	}
 	return nil

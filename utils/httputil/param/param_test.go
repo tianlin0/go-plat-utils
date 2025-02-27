@@ -68,6 +68,26 @@ func TestPath(t *testing.T) {
 	fmt.Println(data)
 }
 
+type AAA struct {
+	Name  string `json:"name" validate:"len=10"`
+	Name2 string `json:"name2"`
+}
+
+func TestParse(t *testing.T) {
+	req := new(http.Request)
+	req.Method = http.MethodGet
+	req.URL = new(url.URL)
+	req.URL.RawQuery = "/v1/auth/auth-check?gpid=&exCluster=&paas_name=gdp-appserver-go"
+	aaa := new(AAA)
+	err := NewParam().SetParsePathFunc(func(r *http.Request) map[string]string {
+		return map[string]string{
+			"name":  "111111111",
+			"name2": "aaa",
+		}
+	}).Parse(req, aaa)
+	fmt.Println(aaa, err)
+}
+
 func setContext(ctx context.Context) context.Context {
 	newCtx := context.WithValue(ctx, "aaaa", "bbbb")
 	ctx = newCtx
