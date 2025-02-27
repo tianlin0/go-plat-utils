@@ -37,7 +37,7 @@ func (p *PageModel) GetPage(maxPageSize int) *PageModel {
 		p.PageNow = 1
 	}
 	if p.PageSize <= 0 {
-		p.PageSize = 50
+		p.PageSize = maxPageSize
 	}
 	if p.PageSize >= maxPageSize {
 		p.PageSize = maxPageSize
