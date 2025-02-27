@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"fmt"
 	"github.com/iancoleman/orderedmap"
 	"github.com/json-iterator/go"
 	"github.com/tianlin0/go-plat-utils/conv"
@@ -312,4 +313,63 @@ func toMapFromString(keyList []string, val interface{}, oneMap map[string]interf
 
 	}
 	return
+}
+
+// GetFieldNamesByTag converts golang struct field into slice string.
+// tagNames 会依次按传的顺序获取
+func GetFieldNamesByTag(in any, tagNames ...string) ([]string, error) {
+	out := make([]string, 0)
+	v := reflect.ValueOf(in)
+	if v.Kind() == reflect.Ptr {
+		v = v.Elem()
+	}
+	// we only accept structs
+	if v.Kind() != reflect.Struct {
+		return nil, fmt.Errorf("ToMap only accepts structs; got %T", v)
+	}
+
+	typ := v.Type()
+	for i := 0; i < v.NumField(); i++ {
+		// gets us a StructField
+		fi := typ.Field(i)
+		if len(tagNames) > 0 {
+			findTagName := false
+			for j := 0; j < len(tagNames); j++ {
+				tempTag := strings.TrimSpace(tagNames[j])
+				name, err := getOneTag(fi, tempTag)
+				if err != nil {
+					continue
+				}
+				findTagName = true
+				if name != "" {
+					out = append(out, name)
+				}
+				break
+			}
+			if !findTagName {
+				out = append(out, fi.Name)
+			}
+		} else {
+			out = append(out, fi.Name)
+		}
+	}
+
+	return out, nil
+}
+
+func getOneTag(fi reflect.StructField, oneTag string) (string, error) {
+	if oneTag == "" {
+		return fi.Name, nil
+	}
+	tagV := fi.Tag.Get(oneTag)
+	if strings.Contains(tagV, ",") {
+		tagV = strings.TrimSpace(strings.Split(tagV, ",")[0])
+	}
+	if tagV == "-" {
+		return "", nil //表示不能用
+	}
+	if tagV == "" {
+		return fi.Name, fmt.Errorf("tag %s not found", oneTag)
+	}
+	return tagV, nil
 }
