@@ -35,10 +35,11 @@ type ParsePathFunc func(r *http.Request) map[string]string
 
 // Param 可以全局定义获取参数的方法
 type Param struct {
-	defaultBodyKeyName string
-	querySplit         string
-	locationOrder      []Location
-	parsePathFunc      ParsePathFunc
+	defaultBodyKeyName  string
+	querySplit          string
+	locationOrder       []Location
+	parsePathFunc       ParsePathFunc
+	customErrorMessages map[string]string
 }
 
 // NewParam 新建
@@ -65,6 +66,12 @@ func (p *Param) SetLocationOrder(list []Location) *Param {
 // SetParsePathFunc 设置获取参数的方法
 func (p *Param) SetParsePathFunc(pathFunc ParsePathFunc) *Param {
 	p.parsePathFunc = pathFunc
+	return p
+}
+
+// SetValidatorCustomErrorMessages 设置获取参数的方法
+func (p *Param) SetValidatorCustomErrorMessages(customErrorMessages map[string]string) *Param {
+	p.customErrorMessages = customErrorMessages
 	return p
 }
 
@@ -318,7 +325,30 @@ func (p *Param) Parse(r *http.Request, dst interface{}) error {
 		return nil
 	}
 	validate := validator.New()
-	if err := validate.StructCtx(r.Context(), dst); err != nil {
+	if err = validate.StructCtx(r.Context(), dst); err != nil {
+		if p.customErrorMessages == nil || len(p.customErrorMessages) == 0 {
+			return err
+		}
+		if _, ok := err.(*validator.InvalidValidationError); ok {
+			return err
+		}
+		// 获取包路径,可以对struct名相同的进行区分开来，避免冲突
+		pkgPath := reflect.TypeOf(dst).Elem().PkgPath()
+		for _, errOne := range err.(validator.ValidationErrors) {
+			errKey := fmt.Sprintf("%s.%s", errOne.StructNamespace(), errOne.Tag())
+			errKey2 := ""
+			if pkgPath != "" {
+				errKey2 = fmt.Sprintf("%s/%s", pkgPath, errKey)
+			}
+			customMsg, exists := p.customErrorMessages[errKey2]
+			if exists {
+				return fmt.Errorf(customMsg)
+			}
+			customMsg, exists = p.customErrorMessages[errKey]
+			if exists {
+				return fmt.Errorf(customMsg)
+			}
+		}
 		return err
 	}
 	return nil
