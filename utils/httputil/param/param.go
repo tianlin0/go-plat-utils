@@ -10,7 +10,9 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"reflect"
 	"strings"
+	"time"
 )
 
 const (
@@ -306,6 +308,15 @@ func (p *Param) Parse(r *http.Request, dst interface{}) error {
 		return valid.Validate()
 	}
 	//使用默认的validator标签验证
+	//如果不是struct类型，则直接跳过默认验证
+	val := reflect.ValueOf(dst)
+	if val.Kind() == reflect.Ptr && !val.IsNil() {
+		val = val.Elem()
+	}
+	timeType := reflect.TypeOf(time.Time{})
+	if val.Kind() != reflect.Struct || val.Type().ConvertibleTo(timeType) {
+		return nil
+	}
 	validate := validator.New()
 	if err := validate.StructCtx(r.Context(), dst); err != nil {
 		return err
