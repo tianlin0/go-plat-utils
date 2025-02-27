@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/go-playground/validator/v10"
 	"github.com/tianlin0/go-plat-utils/conv"
 	"io"
 	"net/http"
@@ -18,6 +19,12 @@ const (
 	LocationQuery  Location = "query"
 	LocationBody   Location = "body"
 )
+
+// Validator represents a validator.
+type Validator interface {
+	// Validate validates the value.
+	Validate() error
+}
 
 type Location string
 
@@ -292,6 +299,15 @@ func (p *Param) Parse(r *http.Request, dst interface{}) error {
 	paramMap := p.GetAllMap(r, true)
 	err := conv.Unmarshal(paramMap, dst)
 	if err != nil {
+		return err
+	}
+	//使用对象自身的验证
+	if valid, ok := dst.(Validator); ok {
+		return valid.Validate()
+	}
+	//使用默认的validator标签验证
+	validate := validator.New()
+	if err := validate.Struct(dst); err != nil {
 		return err
 	}
 	return nil
