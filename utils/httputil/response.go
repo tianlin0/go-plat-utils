@@ -21,12 +21,45 @@ type CommResponse struct {
 
 // PageModel 分页结构输出
 type PageModel struct {
-	Count     int64       `json:"count"`
-	PageNow   int         `json:"pageNow,omitempty"`
-	PageStart int         `json:"pageStart,omitempty"`
-	PageSize  int         `json:"pageSize,omitempty"`
-	PageTotal int         `json:"pageTotal,omitempty"`
-	DataList  interface{} `json:"dataList"`
+	Count      int64       `json:"count"`                // 数据总数
+	PageNow    int         `json:"pageNow,omitempty"`    // 当前页数
+	PageOffset int         `json:"pageOffset,omitempty"` // 当前页面的偏移量
+	PageSize   int         `json:"pageSize,omitempty"`   // 每页显示的数目
+	PageTotal  int         `json:"pageTotal,omitempty"`  // 总页数
+	DataList   interface{} `json:"dataList"`             // 数据列表
+}
+
+func (p *PageModel) GetPage(maxPageSize int) *PageModel {
+	if maxPageSize <= 0 {
+		maxPageSize = 50
+	}
+	if p.PageNow <= 0 {
+		p.PageNow = 1
+	}
+	if p.PageSize <= 0 {
+		p.PageSize = 50
+	}
+	if p.PageSize >= maxPageSize {
+		p.PageSize = maxPageSize
+	}
+
+	if p.Count > 0 {
+		// 计算整除的结果
+		quotient := int(p.Count) / p.PageSize
+		// 计算余数
+		remainder := int(p.Count) % p.PageSize
+		if remainder == 0 {
+			p.PageTotal = quotient
+		} else {
+			p.PageTotal = quotient + 1
+		}
+		if p.PageNow > p.PageTotal {
+			p.PageNow = p.PageTotal
+		}
+	}
+	p.PageOffset = (p.PageNow - 1) * p.PageSize
+
+	return p
 }
 
 // WithNowTime 获取通用的返回格式
