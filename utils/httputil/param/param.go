@@ -8,6 +8,7 @@ import (
 	"github.com/go-playground/validator/v10"
 	"github.com/tianlin0/go-plat-utils/conv"
 	"io"
+	"log"
 	"net/http"
 	"net/url"
 	"reflect"
@@ -304,12 +305,23 @@ func (p *Param) GetAllMap(r *http.Request, hasAll bool) map[string]interface{} {
 }
 
 // Parse 简单赋值
-func (p *Param) Parse(r *http.Request, dst interface{}) error {
+// openValidate 打开检查，默认是true; dst 传指针
+func (p *Param) Parse(r *http.Request, dst interface{}, openValidate ...bool) error {
 	paramMap := p.GetAllMap(r, true)
 	err := conv.Unmarshal(paramMap, dst)
 	if err != nil {
 		return err
 	}
+	isCheck := true
+
+	if len(openValidate) == 1 {
+		isCheck = openValidate[0]
+	}
+
+	if !isCheck {
+		return nil
+	}
+
 	//使用对象自身的验证
 	if valid, ok := dst.(Validator); ok {
 		return valid.Validate()
@@ -333,7 +345,11 @@ func (p *Param) Parse(r *http.Request, dst interface{}) error {
 			return err
 		}
 		// 获取包路径,可以对struct名相同的进行区分开来，避免冲突
-		pkgPath := reflect.TypeOf(dst).Elem().PkgPath()
+		typ := reflect.TypeOf(dst)
+		if typ.Kind() == reflect.Ptr {
+			typ = typ.Elem()
+		}
+		pkgPath := typ.PkgPath()
 		for _, errOne := range err.(validator.ValidationErrors) {
 			errKey := fmt.Sprintf("%s.%s", errOne.StructNamespace(), errOne.Tag())
 			errKey2 := ""
@@ -348,6 +364,8 @@ func (p *Param) Parse(r *http.Request, dst interface{}) error {
 			if exists {
 				return fmt.Errorf(customMsg)
 			}
+			log.Default().Println("customErrorMessages map key has package: ", errKey2)
+			log.Default().Println("customErrorMessages map key: ", errKey)
 		}
 		return err
 	}

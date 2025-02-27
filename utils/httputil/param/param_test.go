@@ -3,7 +3,6 @@ package param
 import (
 	"context"
 	"fmt"
-	"github.com/go-playground/validator/v10"
 	"github.com/tianlin0/go-plat-utils/conv"
 	"net/http"
 	"net/url"
@@ -83,23 +82,12 @@ func TestParse(t *testing.T) {
 	err := NewParam().SetParsePathFunc(func(r *http.Request) map[string]string {
 		return map[string]string{
 			"name": "111111111",
-			//"name2": "aaa",
 		}
 	}).SetValidatorCustomErrorMessages(map[string]string{
-		"aaaa": "dddd",
+		"aaaa":               "dddd",
+		"AAA.Name2.required": "aaaaaajkjkjk",
 	}).Parse(req, aaa)
 
-	if err != nil {
-		if _, ok := err.(*validator.InvalidValidationError); ok {
-			fmt.Println(err)
-		} else {
-			for _, err := range err.(validator.ValidationErrors) {
-				fmt.Println(err.Namespace())
-				fmt.Println(err.StructNamespace())
-				fmt.Println(err.Tag())
-			}
-		}
-	}
 	fmt.Println(aaa, err)
 }
 
