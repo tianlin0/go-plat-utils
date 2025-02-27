@@ -8,11 +8,11 @@ import (
 // CommError 通用错误信息
 type CommError interface {
 	Error() string
-	Code() int64
+	Code() int
 }
 
 type commErr struct {
-	code    int64  `json:"code"`
+	code    int    `json:"code"`
 	message string `json:"message"`
 }
 
@@ -23,7 +23,7 @@ func (err *commErr) Error() string {
 	}
 	return err.message
 }
-func (err *commErr) Code() int64 {
+func (err *commErr) Code() int {
 	if err == nil {
 		return conf.DefaultErrorCode
 	}
@@ -31,7 +31,7 @@ func (err *commErr) Code() int64 {
 }
 
 // New 新建错误对象
-func New(msg string, code ...int64) *commErr {
+func New(msg string, code ...int) *commErr {
 	err := &commErr{
 		code:    conf.DefaultErrorCode,
 		message: msg,
@@ -43,7 +43,7 @@ func New(msg string, code ...int64) *commErr {
 }
 
 // Wrap 新增error Code
-func Wrap(err error, code ...int64) error {
+func Wrap(err error, code ...int) error {
 	if err == nil {
 		return nil
 	}
@@ -51,7 +51,7 @@ func Wrap(err error, code ...int64) error {
 	if err != nil {
 		errStr = err.Error()
 	}
-	var tempCode int64 = conf.DefaultErrorCode
+	var tempCode int = conf.DefaultErrorCode
 	var errTemp CommError
 	if errors.As(err, &errTemp) {
 		tempCode = errTemp.Code()
