@@ -349,6 +349,8 @@ func GetStructInfoByTag(in any, f func(string) string, tagNames ...string) (stru
 	typ := v.Type()
 	structName = typ.Name()
 
+	fieldMap = make(map[string]any)
+
 	for i := 0; i < v.NumField(); i++ {
 		// gets us a StructField
 		fi := typ.Field(i)
