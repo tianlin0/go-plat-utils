@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/iancoleman/orderedmap"
 	"github.com/json-iterator/go"
+	"github.com/samber/lo"
 	"github.com/tianlin0/go-plat-utils/conv"
 	"github.com/tidwall/gjson"
 	"github.com/tidwall/sjson"
@@ -315,46 +316,67 @@ func toMapFromString(keyList []string, val interface{}, oneMap map[string]interf
 	return
 }
 
-// GetFieldNamesByTag converts golang struct field into slice string.
+// GetStructInfoByTag converts golang struct field into slice string.
 // tagNames 会依次按传的顺序获取
-func GetFieldNamesByTag(in any, tagNames ...string) ([]string, error) {
-	out := make([]string, 0)
+func GetStructInfoByTag(in any, f func(string) string, tagNames ...string) (structName string, fieldMap map[string]interface{}, err error) {
 	v := reflect.ValueOf(in)
 	if v.Kind() == reflect.Ptr {
+		if v.IsNil() {
+			return "", nil, fmt.Errorf("input is a nil pointer")
+		}
 		v = v.Elem()
 	}
 	// we only accept structs
 	if v.Kind() != reflect.Struct {
-		return nil, fmt.Errorf("ToMap only accepts structs; got %T", v)
+		return "", nil, fmt.Errorf("ToMap only accepts structs; got %T", v)
+	}
+	if f == nil {
+		f = func(s string) string {
+			return s
+		}
+	}
+
+	newTagNames := make([]string, 0)
+	if tagNames != nil && len(tagNames) > 0 {
+		lo.ForEach(tagNames, func(item string, index int) {
+			item = strings.TrimSpace(item)
+			if item != "" {
+				newTagNames = append(newTagNames, item)
+			}
+		})
 	}
 
 	typ := v.Type()
+	structName = typ.Name()
+
 	for i := 0; i < v.NumField(); i++ {
 		// gets us a StructField
 		fi := typ.Field(i)
-		if len(tagNames) > 0 {
-			findTagName := false
-			for j := 0; j < len(tagNames); j++ {
-				tempTag := strings.TrimSpace(tagNames[j])
+		vi := v.Field(i)
+
+		oneKey := ""
+		findTagName := false
+		if len(newTagNames) > 0 {
+			for j := 0; j < len(newTagNames); j++ {
+				tempTag := strings.TrimSpace(newTagNames[j])
 				name, err := getOneTag(fi, tempTag)
 				if err != nil {
 					continue
 				}
 				findTagName = true
-				if name != "" {
-					out = append(out, name)
-				}
+				oneKey = name
 				break
 			}
-			if !findTagName {
-				out = append(out, fi.Name)
-			}
-		} else {
-			out = append(out, fi.Name)
+		}
+		if !findTagName {
+			oneKey = f(fi.Name)
+		}
+
+		if oneKey != "" { //有可能tag设置为-的情况
+			fieldMap[oneKey] = vi.Interface()
 		}
 	}
-
-	return out, nil
+	return
 }
 
 func getOneTag(fi reflect.StructField, oneTag string) (string, error) {
