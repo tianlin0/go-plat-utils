@@ -11,6 +11,7 @@ import (
 	"log"
 	"reflect"
 	"regexp"
+	"runtime"
 	"sort"
 	"strconv"
 	"strings"
@@ -356,6 +357,11 @@ func GetStructInfoByTag(in any, f func(string) string, tagNames ...string) (stru
 		fi := typ.Field(i)
 		vi := v.Field(i)
 
+		//首字母大写的才能导出
+		if strings.ToUpper(fi.Name[:1]) != fi.Name[:1] {
+			continue
+		}
+
 		oneKey := ""
 		findTagName := false
 		if len(newTagNames) > 0 {
@@ -375,7 +381,9 @@ func GetStructInfoByTag(in any, f func(string) string, tagNames ...string) (stru
 		}
 
 		if oneKey != "" { //有可能tag设置为-的情况
-			fieldMap[oneKey] = vi.Interface()
+			if vi.IsValid() {
+				fieldMap[oneKey] = vi.Interface()
+			}
 		}
 	}
 	return
@@ -396,4 +404,57 @@ func getOneTag(fi reflect.StructField, oneTag string) (string, error) {
 		return fi.Name, fmt.Errorf("tag %s not found", oneTag)
 	}
 	return tagV, nil
+}
+
+// StructInfo 用于存储结构体的通用信息
+type StructInfo struct {
+	PackageName string
+	TypeName    string
+	Fields      []FieldInfo
+}
+
+// FieldInfo 用于存储结构体字段的信息
+type FieldInfo struct {
+	Name string
+	Type string
+	Tag  string
+}
+
+// GetStructInfo 函数用于获取结构体的详细信息
+func GetStructInfo(obj interface{}) StructInfo {
+	// 获取对象的反射类型
+	t := reflect.TypeOf(obj)
+	if t.Kind() == reflect.Ptr {
+		t = t.Elem()
+	}
+
+	// 获取包名和类型名
+	pkgPath := t.PkgPath()
+	if pkgPath == "" {
+		// 如果是未命名包，使用默认值
+		pkgPath = ""
+	}
+	pkgName := runtime.FuncForPC(reflect.ValueOf(obj).Pointer()).Name()
+	if lastSlash := len(pkgPath) - 1; lastSlash > 0 {
+		pkgName = pkgPath[lastSlash+1:]
+	}
+	typeName := t.Name()
+
+	// 遍历结构体的字段
+	var fields []FieldInfo
+	for i := 0; i < t.NumField(); i++ {
+		field := t.Field(i)
+		fieldInfo := FieldInfo{
+			Name: field.Name,
+			Type: field.Type.String(),
+			Tag:  string(field.Tag),
+		}
+		fields = append(fields, fieldInfo)
+	}
+
+	return StructInfo{
+		PackageName: pkgName,
+		TypeName:    typeName,
+		Fields:      fields,
+	}
 }
