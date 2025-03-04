@@ -22,3 +22,8 @@ func IsNil(i interface{}) bool {
 	}
 	return false
 }
+
+// IsZero 判断变量是否为零值
+func IsZero(v interface{}) bool {
+	return reflect.ValueOf(v).IsZero()
+}
