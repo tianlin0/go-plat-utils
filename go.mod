@@ -3,7 +3,6 @@ module github.com/tianlin0/go-plat-utils
 go 1.23.2
 
 require (
-	github.com/ChengjinWu/gojson v0.0.0-20181113073026-04749cc2d015
 	github.com/Knetic/govaluate v3.0.0+incompatible
 	github.com/PaesslerAG/gval v1.2.4
 	github.com/alicebob/miniredis/v2 v2.34.0

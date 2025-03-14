@@ -42,6 +42,8 @@ func NewEngineLogic() *EngineLogic {
 		"SubByNumber": ruleLogicFunc.SubByNumber,
 		"MulByNumber": ruleLogicFunc.MulByNumber,
 		"DivByNumber": ruleLogicFunc.DivByNumber,
+		"Has":         ruleLogicFunc.Has,
+		"In":          ruleLogicFunc.In,
 	}
 	return ruleLogic
 }
