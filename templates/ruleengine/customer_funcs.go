@@ -2,6 +2,8 @@ package ruleengine
 
 import (
 	"github.com/shopspring/decimal"
+	"github.com/tianlin0/go-plat-utils/conv"
+	"reflect"
 )
 
 // customerFunc 自定义方法列表
@@ -81,4 +83,40 @@ func (r *customerFunc) DivByNumber(args ...interface{}) (interface{}, error) {
 	return r.relationByNumber(func(d1 decimal.Decimal, d2 decimal.Decimal) decimal.Decimal {
 		return d1.Div(d2)
 	}, args...), nil
+}
+
+// Has 数组是否包含某元素
+func (r *customerFunc) Has(args ...interface{}) (interface{}, error) {
+	if args == nil || len(args) != 2 {
+		return false, nil
+	}
+	listInterface := args[0]
+	item := conv.String(args[1])
+	listType := reflect.TypeOf(listInterface)
+	listValue := reflect.ValueOf(listInterface)
+	if listType.Kind() == reflect.Slice {
+		for i := 0; i < listValue.Len(); i++ {
+			if conv.String(listValue.Index(i).Interface()) == item {
+				return true, nil
+			}
+		}
+	} else if listType.Kind() == reflect.String {
+		//这种字符串的格式：`["a", "b"]`
+		list := make([]any, 0)
+		_ = conv.Unmarshal(listInterface, &list)
+		for _, v := range list {
+			if conv.String(v) == item {
+				return true, nil
+			}
+		}
+	}
+	return false, nil
+}
+
+// In 是否存在某数组中
+func (r *customerFunc) In(args ...interface{}) (interface{}, error) {
+	if args == nil || len(args) != 2 {
+		return false, nil
+	}
+	return r.Has(args[1], args[0])
 }
