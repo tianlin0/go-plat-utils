@@ -3,7 +3,9 @@ package param
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/go-playground/validator/v10"
 	"github.com/tianlin0/go-plat-utils/conv"
@@ -36,11 +38,12 @@ type ParsePathFunc func(r *http.Request) map[string]string
 
 // Param 可以全局定义获取参数的方法
 type Param struct {
-	defaultBodyKeyName  string
-	querySplit          string
-	locationOrder       []Location
-	parsePathFunc       ParsePathFunc
-	customErrorMessages map[string]string
+	defaultBodyKeyName      string
+	querySplit              string
+	locationOrder           []Location
+	parsePathFunc           ParsePathFunc
+	customErrorMessages     map[string]string
+	errorMessagesTranslator func(r context.Context, errorKey, errorMsg string) error
 }
 
 // NewParam 新建
@@ -71,8 +74,13 @@ func (p *Param) SetParsePathFunc(pathFunc ParsePathFunc) *Param {
 }
 
 // SetValidatorCustomErrorMessages 设置获取参数的方法
-func (p *Param) SetValidatorCustomErrorMessages(customErrorMessages map[string]string) *Param {
-	p.customErrorMessages = customErrorMessages
+func (p *Param) SetValidatorCustomErrorMessages(customErrorMessages map[string]string, errorMessagesTranslator func(ctx context.Context, errorKey, errorMsg string) error) *Param {
+	if customErrorMessages != nil && len(customErrorMessages) > 0 {
+		p.customErrorMessages = customErrorMessages
+	}
+	if errorMessagesTranslator != nil {
+		p.errorMessagesTranslator = errorMessagesTranslator
+	}
 	return p
 }
 
@@ -341,9 +349,10 @@ func (p *Param) Parse(r *http.Request, dst interface{}, openValidate ...bool) er
 		if p.customErrorMessages == nil || len(p.customErrorMessages) == 0 {
 			return err
 		}
-		if _, ok := err.(*validator.InvalidValidationError); ok {
+		if errors.Is(err, new(validator.InvalidValidationError)) {
 			return err
 		}
+
 		// 获取包路径,可以对struct名相同的进行区分开来，避免冲突
 		typ := reflect.TypeOf(dst)
 		if typ.Kind() == reflect.Ptr {
@@ -356,12 +365,16 @@ func (p *Param) Parse(r *http.Request, dst interface{}, openValidate ...bool) er
 			if pkgPath != "" {
 				errKey2 = fmt.Sprintf("%s/%s", pkgPath, errKey)
 			}
-			customMsg, exists := p.customErrorMessages[errKey2]
-			if exists {
+			if customMsg, exists := p.customErrorMessages[errKey2]; exists {
+				if p.errorMessagesTranslator != nil {
+					return p.errorMessagesTranslator(r.Context(), errKey2, customMsg)
+				}
 				return fmt.Errorf(customMsg)
 			}
-			customMsg, exists = p.customErrorMessages[errKey]
-			if exists {
+			if customMsg, exists := p.customErrorMessages[errKey]; exists {
+				if p.errorMessagesTranslator != nil {
+					return p.errorMessagesTranslator(r.Context(), errKey, customMsg)
+				}
 				return fmt.Errorf(customMsg)
 			}
 			log.Default().Println("customErrorMessages map key has package: ", errKey2)
