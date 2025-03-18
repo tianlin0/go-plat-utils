@@ -2,6 +2,8 @@ module github.com/tianlin0/go-plat-utils
 
 go 1.23.2
 
+require github.com/tianlin0/go-plat-startupcfg v0.0.0-20250318042322-70de59ab8503
+
 require (
 	github.com/Knetic/govaluate v3.0.0+incompatible
 	github.com/PaesslerAG/gval v1.2.4
@@ -45,7 +47,6 @@ require (
 	github.com/soniah/evaler v2.2.0+incompatible
 	github.com/sony/sonyflake v1.2.0
 	github.com/stretchr/testify v1.9.0
-	github.com/tianlin0/go-plat-startupcfg v1.0.20250224002
 	github.com/tidwall/gjson v1.18.0
 	github.com/tidwall/sjson v1.2.5
 	github.com/timandy/routine v1.1.4
