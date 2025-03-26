@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/marspere/goencrypt"
 	"github.com/samber/lo"
-	"github.com/tianlin0/go-plat-utils/utils/id"
+	"github.com/tianlin0/go-plat-utils/id-generator/id"
 	"regexp"
 	"strings"
 	"unicode/utf8"

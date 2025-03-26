@@ -16,6 +16,29 @@ var (
 	m         sync.Mutex
 )
 
+const base62Chars = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+
+// decimalToBase 函数用于将十进制数字转换为指定进制的字符串
+func decimalToBase(num uint64, base int) string {
+	charset := base62Chars
+	if num == 0 {
+		return string(charset[0])
+	}
+	if base < 2 {
+		base = 2
+	}
+	if base > 62 {
+		base = 62
+	}
+	var result []byte
+	for num > 0 {
+		remainder := num % uint64(base)
+		result = append([]byte{charset[remainder]}, result...)
+		num /= uint64(base)
+	}
+	return string(result)
+}
+
 // initGenerator 初始化,避免用init
 func initGenerator() {
 	if generator != nil { // 如果生成器已经初始化，直接返回
@@ -50,28 +73,40 @@ func initGenerator() {
 	initGenerator()
 }
 
-// Generator id 生成器，接受一个进制值，转换为对应进制的 id
-func Generator(base int) (string, error) {
-	initGenerator()
-
-	if base < 2 || base > 64 {
-		return "", fmt.Errorf("生成唯一ID失败,base参数要求在 2～64 之间")
+// Generator id 生成器，接受一个进制值，转换为对应进制的 id: qFS1rdQXe
+func Generator(base int) string {
+	id := GeneratorInt()
+	if id == 0 {
+		return ""
 	}
+	if base < 2 {
+		base = 2
+	}
+	if base > 36 {
+		return decimalToBase(id, base)
+	}
+
+	// FormatUint base最大36
+	return strconv.FormatUint(id, base)
+}
+
+// GeneratorInt id 生成器:5817151654986320
+func GeneratorInt() uint64 {
+	initGenerator()
 
 	id, err := generator.NextID()
 	if err != nil {
 		// 函数内部重试一次
 		id, err = generator.NextID()
 		if err != nil {
-			return "", fmt.Errorf("生成唯一ID失败: %w", err)
+			return 0
 		}
 	}
-
-	return strconv.FormatInt(int64(id), base), nil
+	return id
 }
 
-// GeneratorBase32 generator 的 base=32 参数科里化后的方法
-func GeneratorBase32() (string, error) {
+// GeneratorBase32 11字符 generator 的 base=32 参数后的方法，如： 558ffag00ig
+func GeneratorBase32() string {
 	return Generator(32)
 }
 

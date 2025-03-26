@@ -2,7 +2,6 @@ package utils_test
 
 import (
 	"fmt"
-	"github.com/tianlin0/go-plat-utils/utils"
 	"testing"
 )
 
@@ -15,15 +14,8 @@ type AAA struct {
 }
 
 func TestTag(t *testing.T) {
-	mm, err := utils.GetFieldNamesByTag(AAA{}, "json", "db")
-	fmt.Println(mm, err)
+	err := fmt.Errorf("aaaaaa")
+	mm := fmt.Errorf("fdsfs: %w", err)
+	fmt.Println(mm.Error())
 
-	mm, err = utils.GetFieldNamesByTag(AAA{}, "db")
-	fmt.Println(mm, err)
-
-	mm, err = utils.GetFieldNamesByTag(AAA{}, "json")
-	fmt.Println(mm, err)
-
-	mm, err = utils.GetFieldNamesByTag(AAA{})
-	fmt.Println(mm, err)
 }

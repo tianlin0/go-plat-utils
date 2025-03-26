@@ -4,8 +4,12 @@ import (
 	"context"
 	"fmt"
 	gocache "github.com/patrickmn/go-cache"
+	"github.com/tianlin0/go-plat-utils/conv"
 	"github.com/timandy/routine"
+	"regexp"
+	"runtime"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 )
@@ -31,8 +35,28 @@ func getInitCache() *gocache.Cache {
 	return ctxCache
 }
 
+func getCurrentGoIdFromRuntime() int64 {
+	var buf [64]byte
+	// 获取当前 goroutine 的栈信息
+	_ = runtime.Stack(buf[:], false)
+	firstLine := strings.Split(string(buf[:]), "\n")[0]
+	re := regexp.MustCompile(`\d+`)
+	numbers := re.FindAllString(firstLine, -1)
+	if len(numbers) > 0 {
+		// 不知道是哪个数字，就进行组合起来，必然会一致的，并且会不同
+		if goIdTemp, ok := conv.Int64(strings.Join(numbers, "")); ok {
+			return goIdTemp
+		}
+	}
+	return -1
+}
+
 // getCurrentGoId 取得当前的协程ID
 func getCurrentGoId() string {
+	goId := getCurrentGoIdFromRuntime()
+	if goId > 0 {
+		return strconv.FormatInt(goId, baseInt)
+	}
 	return strconv.FormatInt(routine.Goid(), baseInt)
 }
 

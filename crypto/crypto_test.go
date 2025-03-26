@@ -2,6 +2,8 @@ package crypto_test
 
 import (
 	"fmt"
+	jwtA "github.com/golang-jwt/jwt"
+	"github.com/tianlin0/go-plat-utils/conv"
 	"github.com/tianlin0/go-plat-utils/crypto"
 	"github.com/tianlin0/go-plat-utils/utils"
 	"testing"
@@ -169,4 +171,25 @@ TjWDiQ4P6p8=
 	zz, err = crypto.DecryptRSA(priStr, qq)
 	fmt.Println(zz, err)
 
+}
+
+func parseJWT(tokenString string, secret []byte) (*jwtA.Token, error) {
+	// 解析 JWT
+	token, err := jwtA.Parse(tokenString, func(token *jwtA.Token) (interface{}, error) {
+		// 验证签名方法
+		if _, ok := token.Method.(*jwtA.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+		}
+		return secret, nil
+	})
+	return token, err
+}
+
+func TestJwt(t *testing.T) {
+	token := "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NDIzNTExNDAsImlhdCI6MTc0MjI2NDc0MCwidXNlcl9pZCI6MSwidXNlcl9uYW1lIjoiYWRtaW4ifQ.flHmeEgfHSMTmiCx-JO7PCsP7ymHM5hxXDYG1Q_VWi0"
+	secret := "sdsafgtrytyuty5656743gtrertert"
+
+	aa, err := parseJWT(token, []byte(secret))
+	fmt.Println(err)
+	fmt.Println(conv.String(aa))
 }

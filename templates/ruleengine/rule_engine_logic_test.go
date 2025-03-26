@@ -12,9 +12,10 @@ import (
 func TestCheckOneRule(t *testing.T) {
 	dataMap := map[string]interface{}{
 		"name": "jacky",
-		"age":  20,
+		"age":  decimal.NewFromInt(20),
 	}
-	rule := "name"
+
+	rule := "age>18"
 
 	ruleEngine := ruleengine.NewEngineLogic()
 	ok, err := ruleEngine.RunOneRuleString(rule, dataMap)

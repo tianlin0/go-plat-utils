@@ -3,6 +3,8 @@ package goroutines_test
 import (
 	"fmt"
 	"github.com/tianlin0/go-plat-utils/goroutines"
+	"regexp"
+	"strings"
 	"testing"
 	"time"
 )
@@ -20,4 +22,15 @@ func TestAsyncExecuteDataList(t *testing.T) {
 		return true, fmt.Errorf("3333")
 	})
 	fmt.Println(num, ret, err)
+}
+func TestGoroutineId(t *testing.T) {
+
+	// 假设这是第一行文本
+	firstLine := "goroutine 75 [running]:\ngithub.com/tianlin0/go-plat-utils/gorout"
+	// 正则表达式匹配一个或多个数字
+	firstLine = strings.Split(firstLine, "\n")[0]
+
+	re := regexp.MustCompile(`\d+`)
+	numbers := re.FindAllString(firstLine, -1)
+	fmt.Println(numbers)
 }

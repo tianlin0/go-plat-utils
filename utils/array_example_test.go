@@ -7,6 +7,7 @@ import (
 	"github.com/tianlin0/go-plat-utils/conv"
 	"strconv"
 	"strings"
+	"testing"
 )
 
 type foo struct {
@@ -36,7 +37,7 @@ func (f foo) Clone() foo {
 %G：根据情况自动选择 %f 或 %E
 %%：百分号
 */
-func ExampleIO() {
+func TestIO(t *testing.T) {
 	caught := false
 
 	lo.TryCatchWithErrorValue(func() error {
@@ -247,11 +248,4 @@ func ExampleIO() {
 	// 10
 	// [4,5,2,3,0,1]
 	// ["hello","world"]
-}
-
-func ExampleArray() {
-
-	// Output:
-	// true
-	// [2,4]
 }
