@@ -3,6 +3,7 @@ package httputil
 import (
 	"fmt"
 	"github.com/tianlin0/go-plat-utils/conv"
+	"github.com/tianlin0/go-plat-utils/id-generator/id"
 	"github.com/tianlin0/go-plat-utils/utils"
 	"log"
 	"net"
@@ -58,9 +59,9 @@ func Ping(host string, port string, timeout time.Duration) error {
 
 // GetLogId 生成唯一日志id
 func GetLogId() string {
-	logId := utils.NewUUID()
+	logId := id.NewUUID()
 	randomStr := fmt.Sprintf("%s%s", logId, utils.RandomString(12))
-	newLogId := utils.GetUUID(randomStr)
+	newLogId := id.GetUUID(randomStr)
 	logIdFront := newLogId[0:24]
 
 	logIdEnd := conv.FormatFromUnixTime(conv.ShortTimeForm12)
