@@ -115,6 +115,16 @@ func TestCheckRuleList1(t *testing.T) {
 	}
 	return
 }
+func TestCheckRuleVars(t *testing.T) {
+	condTypeCustomVarPattern := `((Has(MEMBER_TAGS, 'M6') && Has(MEMBER_TAGS, 'Y') && Has(MEMBER_TAGS, 'K1') && In(M6_MEMBER_COMPANY_NO, ['M6-002','M6-004','M6-005','M6-006','M6-007','M6-009','M6-010']) && true))`
+	ruleLogic := ruleengine.NewEngineLogic()
+	customList, err := ruleLogic.Vars(condTypeCustomVarPattern)
+	if err != nil {
+		return
+	}
+	fmt.Println(customList)
+	return
+}
 
 type AA struct {
 	Name string
