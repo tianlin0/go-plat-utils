@@ -83,6 +83,15 @@ func toTimeFromNormal(v string) (time.Time, error) {
 		return time.Parse(time.RFC3339, v)
 	} else if tLen == len(time.RFC3339Nano) {
 		return time.Parse(time.RFC3339Nano, v)
+	} else if tLen == len("2025-03-28T18:59:24") {
+		timeArray := strings.Split(v, "T")
+		if len(timeArray) == 2 {
+			return time.Parse(time.DateTime, timeArray[0]+" "+timeArray[1])
+		}
+		timeArray = strings.Split(v, " ")
+		if len(timeArray) == 2 {
+			return time.Parse(time.DateTime, v)
+		}
 	}
 
 	return time.Time{}, fmt.Errorf("no found")

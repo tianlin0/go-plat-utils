@@ -41,6 +41,7 @@ func SnakeString(s string) string {
 	//userIDC => user_idc
 	//userADDR rmb => user_addr_rmb
 	//userAbc => user_abc
+	//t_Result => t_result
 
 	num := len(s)
 	newData := make([]string, 0, len(s))
@@ -74,7 +75,13 @@ func SnakeString(s string) string {
 	for i := 0; i < num; i++ {
 		d := s[i]
 		if i > 0 && d >= 'A' && d <= 'Z' && j {
-			data = append(data, '_')
+			if s[i-1] != '_' {
+				if i+1 < num {
+					if s[i+1] != '_' {
+						data = append(data, '_')
+					}
+				}
+			}
 		}
 		if d != '_' {
 			j = true
