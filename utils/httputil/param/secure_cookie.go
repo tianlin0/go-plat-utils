@@ -12,6 +12,7 @@ type secureCookie struct {
 	sc       *securecookie.SecureCookie
 }
 
+// NewSecureCookie 新建一个安全的cookie
 func NewSecureCookie(hashKey, blockKey []byte) *secureCookie {
 	if hashKey == nil || len(hashKey) == 0 {
 		hashKey = securecookie.GenerateRandomKey(64)
@@ -26,6 +27,7 @@ func NewSecureCookie(hashKey, blockKey []byte) *secureCookie {
 	}
 }
 
+// Encode 加密一个cookieValue
 func (s *secureCookie) Encode(cookieName, cookieValue string) (string, error) {
 	if cookieName == "" || cookieValue == "" {
 		return "", fmt.Errorf("cookie name or value empty: %s, %s", cookieName, cookieValue)
@@ -36,6 +38,8 @@ func (s *secureCookie) Encode(cookieName, cookieValue string) (string, error) {
 	}
 	return encoded, nil
 }
+
+// Decode 解密一个cookieValue
 func (s *secureCookie) Decode(cookieName, cookieValue string) (string, error) {
 	var dstValue string
 	err := s.sc.Decode(cookieName, cookieValue, &dstValue)

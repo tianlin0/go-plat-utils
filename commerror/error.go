@@ -1,4 +1,4 @@
-package errors
+package commerror
 
 import (
 	"errors"
